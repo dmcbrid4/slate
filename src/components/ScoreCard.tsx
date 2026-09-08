@@ -80,7 +80,7 @@ export function BaseballScore({ event }: { event: BaseballFixture }) {
 export function FootballScore({ event }: { event: FootballFixture }) {
   return <>
     <div className="team-lines">{event.participants.map((participant, i) => <TeamRow key={participant.short} participant={participant} score={event.score?.[i]} possession={event.status === 'live' && event.possession === i} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>)}</div>
-    <div className="score-footnote">{event.status === 'live' ? `${event.participants[event.possession ?? 0].short} ball · ${event.situation}` : event.status === 'scheduled' ? event.venue : 'Week 1'}</div>
+    <div className="score-footnote">{event.status === 'live' ? <>{event.participants[event.possession ?? 0].short} ball · <strong>{event.situation}</strong></> : event.status === 'scheduled' ? event.venue : 'Week 1'}</div>
   </>;
 }
 
