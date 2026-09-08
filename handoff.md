@@ -22,7 +22,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
    - Cover existing no-events, no-follows, missing-event, and storage-warning paths. Do not invent new product states. Codex reviews scope and copy.
 9. [x] Responsive visual polish — Claude, GPT-5.6 Terra / medium reasoning
    - Make bounded CSS fixes at existing breakpoints. Do not change navigation, information hierarchy, or data behavior. Codex reviews the diff.
-10. [ ] PWA polish — Claude, GPT-5.6 Terra / medium reasoning
+10. [x] PWA polish — Claude, GPT-5.6 Terra / medium reasoning
     - Limit this to the existing manifest, icons, install metadata, and basic shell. Do not add service workers or offline data.
 11. [ ] For You refinement — Codex, GPT-5.6 Sol / high reasoning
     - Codex decides ranking, grouping, context placement, and information density; Claude may implement the approved result.
@@ -132,7 +132,7 @@ The local app runs at `http://localhost:3000`. The repository is already configu
 
 Give Claude one numbered item or one narrowly bounded subtask at a time. Include the exact files, expected behavior, and an explicit instruction not to expand scope. Claude should commit its work. Codex reviews the diff, runs validation, and decides whether the task is complete before moving on.
 
-The next execution tranche is **#6–#10, Claude-first**: MLB, NFL, existing degraded/empty states, responsive CSS, and PWA metadata. Codex should review each bounded change and run validation before accepting it. The next Codex product-reasoning task is **#11 For You refinement**.
+The **#6–#10 Claude-first tranche** (MLB, NFL, existing degraded/empty states, responsive CSS, and PWA metadata) is implemented and committed. Codex should review each bounded change and run validation before accepting it. The next Codex product-reasoning task is **#11 For You refinement**.
 
 ## Task 4 acceptance criteria
 
