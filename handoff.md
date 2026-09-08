@@ -32,11 +32,11 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - Codex defines the live score hierarchy; Claude may add approved fixtures and presentation details.
 14. [x] Unified US Open experience — Codex, GPT-5.6 Sol / high reasoning
     - Codex defines the tournament experience; Claude may implement approved labels, fixtures, filters, and responsive styling.
-15. [ ] Search — Codex, GPT-5.6 Sol / high reasoning
+15. [x] Search — Codex, GPT-5.6 Sol / high reasoning
     - Codex defines discovery behavior; Claude may implement the approved input, results, empty state, and styling.
-16. [ ] Following management — Codex, GPT-5.6 Sol / medium reasoning
+16. [x] Following management — Codex, GPT-5.6 Sol / medium reasoning
     - Codex defines reorder and follow behavior; Claude may implement the approved interactions.
-17. [ ] Accessibility pass — Codex, GPT-5.6 Terra / high reasoning
+17. [x] Accessibility pass — Codex, GPT-5.6 Terra / high reasoning
     - Codex audits the complete experience; Claude may apply mechanical fixes identified by the audit.
 18. [ ] Yahoo comparison review — Codex, GPT-5.6 Sol / high reasoning
 19. [ ] Final corrections — Codex, GPT-5.6 Sol / high reasoning
@@ -44,7 +44,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 20. [ ] Final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
     - Run typecheck, lint, tests, build, browser QA, scope review, commit, push, and update the documentation.
 
-## Tasks 6–13 summary
+## Tasks 6–17 summary
 
 Implemented and committed on `main` (not pushed).
 
@@ -58,6 +58,10 @@ Starting with #11, the user authorized Claude to make the product-judgment calls
 11. For You refinement (`src/components/Scoreboard.tsx`, judgment call) — the Following page promises "your scoreboard, in your order," and the follow rail/swipe order already honor that, but For You's broad (non-personal) sections were hardcoded as tennis, then NFL, then a Premier League overflow, regardless of the user's actual follow order. Sections are now built by walking `following` and grouping each broad (Competition/Tournament/Collection) entity's events in that order, so reordering follows on the Following page now reorders For You's sections too. Visual treatment per section (US Open's tournament link, football's "Week 1", soccer's collapsed overflow) is unchanged — only ordering changed. Also removed the dead "MLB" section: there's no broad MLB follow entity in the fixture data, only team-level follows, so it never rendered anything.
 12. Soccer presentation (`src/components/ScoreCard.tsx`) — goal scorers only rendered while a match was live; once final, that information vanished from the card entirely (confirmed on Chelsea 1-1 Brighton, which has no context sentence — the card showed just a bare score with no story). The event detail page already lists goals for both live and final. Scorers now show for both; scheduled is unaffected.
 13. Tennis scoring (`app/globals.css`, judgment call) — `.set-won` and `.active-set` shared one CSS rule, so both players' score in the in-progress set rendered with identical bold weight regardless of who was actually ahead (e.g. Sinner leading 4-3 looked the same as Alcaraz trailing). Completed sets already distinguished winner from loser correctly. Split the rule so the active set gets a lighter default weight and the true leader (active or completed) gets the same bold treatment as a confirmed set win — matching how FotMob/Apple Sports (the product's own stated references) show an in-progress leader.
+14. Unified US Open experience (`src/components/Scoreboard.tsx`) — order-of-play courts were derived from first-appearance order in a list sorted by [status, start time], not by court priority, so on a day split across courts Louis Armstrong Stadium could list ahead of Arthur Ashe Stadium just because its match started earlier. Courts now sort by an explicit priority (Ashe, then Armstrong, then anything else) with matches staying chronological within each court.
+15. Search — reviewed thoroughly (query matching, empty state, zero-results state, ARIA labeling); found no bounded defect worth fixing. No code change.
+16. Following management — reviewed and verified live (reorder persists across reload, boundaries correctly disable the right buttons); found no bounded defect worth fixing on its own. No code change here — see #17 for a real issue this review surfaced.
+17. Accessibility pass (`app/globals.css`, `src/components/ScoreCard.tsx`, `src/components/Discovery.tsx`) — ran axe-core (WCAG 2.1 A/AA) against every screen in both themes rather than eyeballing it. Two confirmed violation categories, fixed with a comfortable margin above the threshold rather than landing just over the line: `--muted` was as low as 3.77:1 against its most common background (unselected date-nav pills), `--live` was 4.48:1 (just under 4.5), and the gold entity-mark text was 4.16:1 — verified the gold fix by sampling actual rendered pixels in dark mode (4.80:1), since axe reads computed style and can't see through the theme's `filter`. Also fixed `aria-prohibited-attr` on `.serve-dot`/`.possession-dot` (empty spans can't carry `aria-label` without a role) by applying the `role="img"` pattern `BaseDiamond` already used elsewhere in the same file. Separately, confirmed via automated keyboard interaction that moving a follow to a list boundary or unfollowing it dropped keyboard focus to `<body>` with no indication of what happened; fixed by redirecting focus to a sensible surviving control (sibling button, neighboring row, or the "Find something to follow" link) after each action. Re-ran the full audit after every fix: zero violations across all screens and both themes.
 
 ## Claude project context
 
