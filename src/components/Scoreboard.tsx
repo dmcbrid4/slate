@@ -32,6 +32,16 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
   const events = selectEvents(fixtures, destination, following, day, timeZone, DEMO_NOW);
   const personal = events.filter(event => isPersonal(event, following));
   const rest = events.filter(event => !isPersonal(event, following));
+  const usedRest = new Set<string>();
+  const broadGroups = following
+    .map(id => entityById[id])
+    .filter(candidate => candidate && candidate.kind !== 'Team' && candidate.kind !== 'Player')
+    .map(broad => {
+      const groupEvents = rest.filter(event => !usedRest.has(event.id) && event.follows.includes(broad.id));
+      groupEvents.forEach(event => usedRest.add(event.id));
+      return { broad, groupEvents };
+    })
+    .filter(group => group.groupEvents.length > 0);
   const entity = entityById[destination];
   const tennis = entity?.sport === 'tennis';
   const tournament = destination === 'us-open';
@@ -79,10 +89,11 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
       {!events.length ? <div className="empty-state"><Icon name="scores" size={32}/><h2>{following.length === 0 && destination === 'for-you' ? 'Your slate starts here' : `No events ${day}`}</h2><p>{following.length === 0 && destination === 'for-you' ? 'Follow a team, player, or competition to make this yours.' : `Nothing scheduled for ${entity?.shortName ?? 'your follows'} on this mock day.`}</p><a className="button-primary" href={following.length === 0 ? '#/search' : '#/scores/for-you/today'}>{following.length === 0 ? 'Find your follows' : 'Go to today’s For You'}<Icon name="arrow" size={16}/></a></div>
       : destination === 'for-you' ? <>
         <EventGroup title="Following closely" events={personal} timeZone={timeZone} from={from}/>
-        <EventGroup title="US Open" subtitle="ATP + WTA" events={rest.filter(event => event.sport === 'tennis')} timeZone={timeZone} from={from} tournament/>
-        <EventGroup title="NFL" subtitle="Week 1" events={rest.filter(event => event.sport === 'football')} timeZone={timeZone} from={from}/>
-        <EventGroup title="MLB" events={rest.filter(event => event.sport === 'baseball')} timeZone={timeZone} from={from}/>
-        {rest.some(event => event.sport === 'soccer') && <details className="league-overflow"><summary><span><Mark mark="PL" color="purple" small/>{rest.filter(event => event.sport === 'soccer').length} {personal.some(event => event.sport === 'soccer') ? 'other ' : ''}Premier League {rest.filter(event => event.sport === 'soccer').length === 1 ? 'match' : 'matches'}</span><Icon name="down" size={18}/></summary><div className="event-grid">{rest.filter(event => event.sport === 'soccer').map(event => <ScoreCard key={event.id} event={event} timeZone={timeZone} from={from}/>)}</div></details>}
+        {broadGroups.map(({ broad, groupEvents }) => broad.sport === 'tennis'
+          ? <EventGroup key={broad.id} title="US Open" subtitle="ATP + WTA" events={groupEvents} timeZone={timeZone} from={from} tournament/>
+          : broad.sport === 'soccer'
+          ? <details key={broad.id} className="league-overflow"><summary><span><Mark mark={broad.mark} color={broad.color} small/>{groupEvents.length} {personal.some(event => event.sport === 'soccer') ? 'other ' : ''}{broad.shortName} {groupEvents.length === 1 ? 'match' : 'matches'}</span><Icon name="down" size={18}/></summary><div className="event-grid">{groupEvents.map(event => <ScoreCard key={event.id} event={event} timeZone={timeZone} from={from}/>)}</div></details>
+          : <EventGroup key={broad.id} title={broad.shortName} subtitle={broad.sport === 'football' ? 'Week 1' : undefined} events={groupEvents} timeZone={timeZone} from={from}/>)}
       </> : tournament ? <>
         <div className="section-heading"><h2>Order of play</h2><span className="secondary">Men + Women</span></div>
         {[...new Set(visible.map(event => event.venue))].map(court => <EventGroup key={court} title={court} events={visible.filter(event => event.venue === court).sort((a, b) => a.start.localeCompare(b.start))} timeZone={timeZone} from={from}/>)}
