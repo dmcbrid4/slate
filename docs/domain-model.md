@@ -1,6 +1,6 @@
 # Slate canonical domain model
 
-Status: Phase 1 architecture decision. This document defines the intended shape; implementation begins in the next task.
+Status: Phase 1 architecture decision. Canonical primitives, invariants, seed data, and the scoreboard projector are implemented through task #23.
 
 ## Purpose
 
@@ -167,8 +167,8 @@ type CanonicalEvent =
 Each state contains only that sport's score and status detail:
 
 - Soccer: side totals, period, minute, added time, aggregate/penalty totals when present, and goal events.
-- Tennis: ordered sets, current games and points, serving participant, round, court, best-of, and tiebreak state when present.
-- Baseball: side totals, inning lines, inning/half, outs, balls, strikes, occupied bases, current batter/pitcher references, hits, errors, and decision summary when present.
+- Tennis: ordered sets, current games and points, serving participant, round, court, best-of, elapsed duration, and tiebreak state when present.
+- Baseball: side totals, inning lines, inning/half, outs, balls, strikes, occupied bases, probable/current pitcher and batter references, hits, errors, and decision summary when present.
 - Football: side totals, quarter lines, quarter, clock, possession, down, distance, and field position when present.
 
 The TypeScript union is canonical. PostgreSQL should store common Event fields as columns and the validated sport state as JSONB initially. This avoids a universal table full of nullable sport fields and avoids prematurely normalizing play-by-play or statistics. A field should move to a column or dedicated table only when Slate needs to query or constrain it independently.

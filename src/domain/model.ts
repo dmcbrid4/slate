@@ -123,6 +123,7 @@ export interface TennisEventState {
   readonly round: string;
   readonly court?: string;
   readonly bestOf?: 3 | 5;
+  readonly durationSeconds?: number;
 }
 
 export interface BaseballDecision {
@@ -140,6 +141,7 @@ export interface BaseballEventState {
   readonly balls?: number;
   readonly strikes?: number;
   readonly bases?: readonly [boolean, boolean, boolean];
+  readonly probablePitcherIds?: readonly [ParticipantId | undefined, ParticipantId | undefined];
   readonly batterId?: ParticipantId;
   readonly pitcherId?: ParticipantId;
   readonly hits?: SideScore;
@@ -223,4 +225,3 @@ export interface DomainGraph {
   readonly providers: readonly Provider[];
   readonly providerMappings: readonly ProviderEntityMapping[];
 }
-

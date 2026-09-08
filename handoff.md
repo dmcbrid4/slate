@@ -49,7 +49,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 21. [x] Architecture and domain shape — Codex, GPT-6 Astra / high reasoning
     - Decisions are recorded in `docs/domain-model.md`, `docs/providers.md`, and `docs/phase-1.md`. Stop here before implementation.
 22. [x] Canonical domain primitives and invariants — Codex, GPT-5.6 Sol / high reasoning
-23. [ ] Canonical mock seed and scoreboard read-model projector — Codex, GPT-5.6 Sol / high reasoning
+23. [x] Canonical mock seed and scoreboard read-model projector — Codex, GPT-5.6 Sol / high reasoning
 24. [ ] Follow targeting, relevance provenance, and deduplication — Codex, GPT-5.6 Sol / high reasoning
 25. [ ] Provider contracts and mock normalizer — Codex, GPT-5.6 Sol / high reasoning
 26. [ ] Normalization test matrix — Claude, GPT-5.6 Terra / medium reasoning
@@ -63,6 +63,8 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 Phase 1 implementation must preserve the Phase 0 UX and must not include a real sports provider, auth, polling, queues, Redis, workers, SSE, WebSockets, or Phase 2 tennis integration.
 
 Task #22 added pure domain modules under `src/domain`: opaque Slate-owned IDs; canonical records for sports, participants, competitions, groups, seasons, events, follows, collections, providers, and mappings; discriminated state for all four sports; record constructors; and cross-record graph invariants. The Phase 0 fixtures and UI remain unchanged. Focused tests cover all sport states, timestamps, identity, sport consistency, event sides, follow targets and positions, and provider identity uniqueness.
+
+Task #23 re-expressed the full fictional slate as a validated canonical graph in `src/data/canonical-seed.ts`. Identity, event state, presentation marks, and deterministic Context are separate. `src/read-models/project-scoreboard.ts` projects canonical records into sport-specific component-facing data, including ATP/WTA grouping, tennis sets/server/duration, structured soccer minutes and scorers, MLB count/pitchers/decisions, and NFL possession/down/distance. A parity test proves the projector preserves every visible Phase 0 fixture field. The UI still reads the temporary fixtures until #24 adds derived relevance and switches the data path.
 
 ## Tasks 6–17 summary
 

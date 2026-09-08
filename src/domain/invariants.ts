@@ -109,6 +109,9 @@ function assertTennisState(state: TennisEventState): void {
   if (state.points && state.points.some(point => !point.trim())) {
     fail('invalid_score_state', 'Tennis points must not be empty.');
   }
+  if (state.durationSeconds !== undefined && (!Number.isInteger(state.durationSeconds) || state.durationSeconds < 0)) {
+    fail('invalid_score_state', 'Tennis duration must be a non-negative integer number of seconds.');
+  }
   const inProgress = state.sets.filter(set => set.status === 'in_progress').length;
   if (inProgress > 1 || (inProgress === 1 && state.sets.at(-1)?.status !== 'in_progress')) {
     fail('invalid_score_state', 'Only the last tennis set may be in progress.');
@@ -340,6 +343,23 @@ export function assertDomainGraph(graph: DomainGraph): void {
     if (!sides?.has(0) || !sides.has(1)) fail('missing_event_side', `Event ${event.id} must have participants on both sides.`);
     if (event.sportId === 'tennis' && event.state.servingParticipantId && !graph.eventParticipants.some(item => item.eventId === event.id && item.participantId === event.state.servingParticipantId)) {
       fail('invalid_event_reference', `Tennis server must participate in event ${event.id}.`);
+    }
+    const assertSportReference = (participantId: string | undefined, label: string) => {
+      if (!participantId) return;
+      const participant = participants.get(participantId);
+      if (!participant) fail('missing_reference', `${label} references missing participant ${participantId}.`);
+      if (participant.sportId !== event.sportId) fail('sport_mismatch', `${label} must reference a ${event.sportId} participant.`);
+    };
+    if (event.sportId === 'soccer') {
+      event.state.goals.forEach(goal => assertSportReference(goal.scorerId, `Goal in event ${event.id}`));
+    }
+    if (event.sportId === 'baseball') {
+      event.state.probablePitcherIds?.forEach(id => assertSportReference(id, `Probable pitcher in event ${event.id}`));
+      assertSportReference(event.state.batterId, `Batter in event ${event.id}`);
+      assertSportReference(event.state.pitcherId, `Pitcher in event ${event.id}`);
+      assertSportReference(event.state.decision?.winningPitcherId, `Winning pitcher in event ${event.id}`);
+      assertSportReference(event.state.decision?.losingPitcherId, `Losing pitcher in event ${event.id}`);
+      assertSportReference(event.state.decision?.savePitcherId, `Save pitcher in event ${event.id}`);
     }
     if (event.sportId === 'football') {
       const references = [event.state.possessionParticipantId, event.state.fieldPosition?.territoryParticipantId].filter(Boolean);
