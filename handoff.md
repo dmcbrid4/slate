@@ -44,6 +44,16 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 20. [ ] Final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
     - Run typecheck, lint, tests, build, browser QA, scope review, commit, push, and update the documentation.
 
+## Tasks 6–10 summary
+
+Implemented and committed on `main` (not pushed).
+
+6. MLB presentation (`src/components/ScoreCard.tsx`, `app/globals.css`) — ordinal inning label ("Bot 7th"), correct outs pluralization ("1 out" / "2 outs") in both the visible footnote and the assistive-tech label, batter name emphasized in the live footnote.
+7. NFL presentation (`src/components/ScoreCard.tsx`) — bolded the down/distance/field-position text in the live footnote so it reads as a separate phrase from "{team} ball", which it was running into.
+8. Degraded and empty states (`src/components/Scoreboard.tsx`, `EventDetail.tsx`, `SlateApp.tsx`, `app/globals.css`) — missing-event now matches the app's other empty states (icon, body copy, back-link) and its recovery link uses the actual originating scoreboard instead of a hardcoded `for-you/today` fallback; fixed a mislabeled CTA ("Back to" → "Go to" today's For You, since the user may already be there); moved the storage-warning banner to the top of the view (it previously rendered after all page content, easy to miss on a long scoreboard) and styled it as a bordered callout consistent with the app's other containers.
+9. Responsive visual polish (`app/globals.css`) — fixed the desktop (≥700px) two-column event grid leaving a dangling empty half-row whenever a group had an odd card count (e.g. 3 followed events, 3 matches on one tennis court). Surveyed 320px/390px/430px/desktop across For You, US Open, Search, Following, and an event detail page; this was the only real issue found.
+10. PWA polish (`app/layout.tsx`) — `app/icon.svg` was building and serving at `/icon.svg` but no `<link rel="icon">` ever referenced it in `<head>`, in both dev and production builds; only the 32×32 `favicon.ico` was wired up. Declared the SVG icon explicitly via `metadata.icons` so browsers that support SVG favicons get the vector version alongside the existing raster fallback. Considered switching the iOS status-bar style to `black-translucent` to match the header's existing safe-area padding, but that forces white status-bar text unconditionally, which would be illegible against the light theme's white header — left as `default`.
+
 ## Claude project context
 
 Slate is a mobile-first personal sports scoreboard. Its primary job is to let someone open the app and quickly understand what happened yesterday, what is happening today, what is next tomorrow, and what is happening across the teams, athletes, leagues, tours, and tournaments they follow.
