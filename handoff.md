@@ -39,7 +39,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 17. [x] Accessibility pass — Codex, GPT-5.6 Terra / high reasoning
     - Codex audits the complete experience; Claude may apply mechanical fixes identified by the audit.
 18. [x] Yahoo comparison review — Codex, GPT-5.6 Sol / high reasoning
-19. [ ] Final corrections — Codex, GPT-5.6 Sol / high reasoning
+19. [x] Final corrections — Codex, GPT-5.6 Sol / high reasoning
     - Delegate only isolated CSS or copy corrections.
 20. [ ] Final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
     - Run typecheck, lint, tests, build, browser QA, scope review, commit, push, and update the documentation.
@@ -175,6 +175,12 @@ The review also identified three bounded Phase 0 questions for #19:
 3. Decide whether local placeholder monograms materially slow team recognition. Replace them only if vetted local assets are already available and the change stays small; official asset sourcing is not required for Phase 0.
 
 The comparison does not establish production trust, freshness, or coverage because Phase 0 intentionally uses deterministic mock data. Those are later concerns and do not change the Phase 0 UX verdict.
+
+## Task 19 final corrections
+
+The narrow-width follow-up at 320px and 390px did not reveal a correction worth changing in code. The rail remains independently scrollable, the active destination remains visible, the three date controls retain equal usable widths, and the first useful score content remains available without adding explanatory copy. Existing swipe behavior is covered by the deterministic gesture tests. Placeholder monograms remain an intentional Phase 0 tradeoff; sourcing official marks would expand the task without evidence that it improves this prototype enough to justify the asset work.
+
+No product-source files changed for #19. Typecheck, lint, tests, and the production build all pass. The remaining work is #20 final validation and handoff.
 
 ## Task 4 acceptance criteria
 
