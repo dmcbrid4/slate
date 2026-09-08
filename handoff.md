@@ -24,7 +24,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
    - Make bounded CSS fixes at existing breakpoints. Do not change navigation, information hierarchy, or data behavior. Codex reviews the diff.
 10. [x] PWA polish — Claude, GPT-5.6 Terra / medium reasoning
     - Limit this to the existing manifest, icons, install metadata, and basic shell. Do not add service workers or offline data.
-11. [ ] For You refinement — Codex, GPT-5.6 Sol / high reasoning
+11. [x] For You refinement — Codex, GPT-5.6 Sol / high reasoning
     - Codex decides ranking, grouping, context placement, and information density; Claude may implement the approved result.
 12. [ ] Soccer presentation — Codex, GPT-5.6 Sol / medium reasoning
     - Codex defines the information hierarchy; Claude may implement approved soccer card markup and styling.
@@ -44,15 +44,18 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 20. [ ] Final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
     - Run typecheck, lint, tests, build, browser QA, scope review, commit, push, and update the documentation.
 
-## Tasks 6–10 summary
+## Tasks 6–11 summary
 
 Implemented and committed on `main` (not pushed).
+
+Starting with #11, the user authorized Claude to make the product-judgment calls directly rather than waiting for a separate Codex pass — Astra already did the foundational/big-picture work (#1–3), and the user didn't want a second big-picture pass on top of it. Items below still note where a call was a judgment decision rather than a mechanical fix.
 
 6. MLB presentation (`src/components/ScoreCard.tsx`, `app/globals.css`) — ordinal inning label ("Bot 7th"), correct outs pluralization ("1 out" / "2 outs") in both the visible footnote and the assistive-tech label, batter name emphasized in the live footnote.
 7. NFL presentation (`src/components/ScoreCard.tsx`) — bolded the down/distance/field-position text in the live footnote so it reads as a separate phrase from "{team} ball", which it was running into.
 8. Degraded and empty states (`src/components/Scoreboard.tsx`, `EventDetail.tsx`, `SlateApp.tsx`, `app/globals.css`) — missing-event now matches the app's other empty states (icon, body copy, back-link) and its recovery link uses the actual originating scoreboard instead of a hardcoded `for-you/today` fallback; fixed a mislabeled CTA ("Back to" → "Go to" today's For You, since the user may already be there); moved the storage-warning banner to the top of the view (it previously rendered after all page content, easy to miss on a long scoreboard) and styled it as a bordered callout consistent with the app's other containers.
 9. Responsive visual polish (`app/globals.css`) — fixed the desktop (≥700px) two-column event grid leaving a dangling empty half-row whenever a group had an odd card count (e.g. 3 followed events, 3 matches on one tennis court). Surveyed 320px/390px/430px/desktop across For You, US Open, Search, Following, and an event detail page; this was the only real issue found.
 10. PWA polish (`app/layout.tsx`) — `app/icon.svg` was building and serving at `/icon.svg` but no `<link rel="icon">` ever referenced it in `<head>`, in both dev and production builds; only the 32×32 `favicon.ico` was wired up. Declared the SVG icon explicitly via `metadata.icons` so browsers that support SVG favicons get the vector version alongside the existing raster fallback. Considered switching the iOS status-bar style to `black-translucent` to match the header's existing safe-area padding, but that forces white status-bar text unconditionally, which would be illegible against the light theme's white header — left as `default`.
+11. For You refinement (`src/components/Scoreboard.tsx`, judgment call) — the Following page promises "your scoreboard, in your order," and the follow rail/swipe order already honor that, but For You's broad (non-personal) sections were hardcoded as tennis, then NFL, then a Premier League overflow, regardless of the user's actual follow order. Sections are now built by walking `following` and grouping each broad (Competition/Tournament/Collection) entity's events in that order, so reordering follows on the Following page now reorders For You's sections too. Visual treatment per section (US Open's tournament link, football's "Week 1", soccer's collapsed overflow) is unchanged — only ordering changed. Also removed the dead "MLB" section: there's no broad MLB follow entity in the fixture data, only team-level follows, so it never rendered anything.
 
 ## Claude project context
 
