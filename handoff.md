@@ -30,7 +30,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - Codex defines the information hierarchy; Claude may implement approved soccer card markup and styling.
 13. [x] Tennis scoring — Codex, GPT-5.6 Sol / high reasoning
     - Codex defines the live score hierarchy; Claude may add approved fixtures and presentation details.
-14. [ ] Unified US Open experience — Codex, GPT-5.6 Sol / high reasoning
+14. [x] Unified US Open experience — Codex, GPT-5.6 Sol / high reasoning
     - Codex defines the tournament experience; Claude may implement approved labels, fixtures, filters, and responsive styling.
 15. [ ] Search — Codex, GPT-5.6 Sol / high reasoning
     - Codex defines discovery behavior; Claude may implement the approved input, results, empty state, and styling.
