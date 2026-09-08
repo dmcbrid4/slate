@@ -69,3 +69,14 @@ The next task is **#5 Date-navigation polish**. Codex should define date-control
 - The mobile bottom navigation clearly identifies the current section, respects safe areas, and never covers the end of the page.
 - A single-touch, horizontally dominant gesture changes followed destination. Taps, vertical scrolling, multi-touch gestures, and swipes past either end do nothing.
 - Keyboard focus styles and accessible current-page labels remain intact throughout navigation.
+
+## Task 5 acceptance criteria
+
+- Yesterday, Today, and Tomorrow appear as three equal, explicit controls on every scoreboard destination.
+- Changing day preserves the active followed destination and creates a normal browser-history entry.
+- The selected day has the strongest visual state. Today remains identifiable as the calendar anchor when Yesterday or Tomorrow is selected.
+- Each control shows its short local-calendar date and exposes its full local date to assistive technology.
+- Day calculations use the viewer's timezone and remain correct across daylight-saving, month, and year boundaries.
+- The event list, event count, heading date, empty-state copy, and event-detail return path all reflect the selected day.
+- Date controls retain usable touch targets and equal widths at the supported mobile sizes and at enlarged text sizes.
+- Horizontal gestures continue to change followed destinations only. Phase 0 adds no date swipe or arbitrary-date picker.
