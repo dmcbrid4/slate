@@ -25,8 +25,13 @@ function TeamRow({ participant, score, winning, possession }: { participant: Par
 
 export function SoccerScore({ event }: { event: SoccerFixture }) {
   return <>
-    <div className="team-lines">{event.participants.map((participant, i) => <TeamRow key={participant.short} participant={participant} score={event.score?.[i]} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>)}</div>
-    {event.status === 'live' && <div className="score-footnote soccer-scorers">{event.goals.filter(goal => goal.side === 0).map(goal => `${goal.player} ${goal.minute}`).join(', ')}</div>}
+    <div className="team-lines">{event.participants.map((participant, i) => {
+      const scorers = event.goals.filter(goal => goal.side === i);
+      return <div className="soccer-team-line" key={participant.short}>
+        <TeamRow participant={participant} score={event.score?.[i]} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>
+        {event.status === 'live' && scorers.length > 0 && <div className="soccer-scorers">{scorers.map(goal => `${goal.player} ${goal.minute}`).join(', ')}</div>}
+      </div>;
+    })}</div>
     {event.status === 'scheduled' && <div className="score-footnote">{event.venue}</div>}
   </>;
 }
@@ -77,9 +82,10 @@ export function SportScore({ event }: { event: Fixture }) {
 }
 
 export function ScoreCard({ event, timeZone, from }: { event: Fixture; timeZone: string; from: string }) {
-  return <a className={`score-card ${event.sport}`} href={eventHref(event.id, from)} aria-label={`${event.participants.map(p => p.name).join(' versus ')}, ${event.status}, view event details`}>
+  return <a className={`score-card ${event.sport}`} href={eventHref(event.id, from)}>
     <div className="card-meta"><span>{event.sport === 'tennis' ? `${event.category}’s singles · ${event.round}` : event.competition}</span><Status event={event} timeZone={timeZone}/></div>
     <SportScore event={event}/>
     {event.context && <div className="context"><Icon name="arrow" size={14}/><span>{event.context}</span></div>}
+    <span className="sr-only">Open event details</span>
   </a>;
 }

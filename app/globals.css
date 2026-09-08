@@ -86,7 +86,8 @@
   .date-nav a.selected small { color: var(--secondary); }
   .date-nav a:hover:not(.selected) { background: var(--hover); }
   .day-meta { display: flex; justify-content: space-between; margin: 13px 1px 23px; color: var(--muted); font-size: .75rem; }
-  .scoreboard-body { touch-action: pan-y; min-height: 300px; }
+  .scoreboard-view { touch-action: pan-y; }
+  .scoreboard-body { min-height: 300px; }
   .event-group { margin-bottom: 27px; }
   .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 1px 11px; min-height: 24px; }
   .section-heading h2 { font-size: .875rem; font-weight: 650; color: var(--text); letter-spacing: -.012em; }
@@ -122,7 +123,7 @@
   [data-theme='dark'] .entity-mark:not(.neutral) { filter: brightness(.84) saturate(.78); }
   @media (prefers-color-scheme: dark) { [data-theme='system'] .entity-mark:not(.neutral) { filter: brightness(.84) saturate(.78); } }
   .score-footnote { color: var(--secondary); font-size: .75rem; margin-top: 12px; min-height: 15px; line-height: 1.5; }
-  .soccer-scorers { padding-left: 34px; font-size: .75rem; }
+  .soccer-scorers { padding: 4px 0 0 34px; color: var(--secondary); font-size: .75rem; line-height: 1.4; }
   .context { margin: 12px -15px -13px; border-top: 1px solid var(--line); padding: 10px 14px; color: var(--secondary); display: flex; align-items: flex-start; gap: 7px; font-size: .75rem; line-height: 1.5; }
   .context svg { margin-top: 2px; }
   .tennis-score { display: grid; row-gap: 10px; }

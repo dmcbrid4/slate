@@ -32,6 +32,9 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
   const tournament = destination === 'us-open';
   const visible = events.filter(event => category === 'All' || event.sport !== 'tennis' || event.category === category);
   const liveCount = events.filter(event => event.status === 'live').length;
+  const startSwipe = (x: number, y: number, touchCount: number) => {
+    touch.current = touchCount === 1 ? { x, y } : null;
+  };
   const swipe = (endX: number, endY: number) => {
     if (!touch.current) return false;
     const dx = endX - touch.current.x;
@@ -42,13 +45,24 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
     return Boolean(next);
   };
 
-  return <>
+  return <div
+    className="scoreboard-view"
+    onTouchStart={event => {
+      const first = event.touches[0];
+      startSwipe(first?.clientX ?? 0, first?.clientY ?? 0, event.touches.length);
+    }}
+    onTouchEnd={event => {
+      const last = event.changedTouches[0];
+      if (last && swipe(last.clientX, last.clientY)) event.preventDefault();
+    }}
+    onTouchCancel={() => { touch.current = null; }}
+  >
     <div className="page-heading"><div><p className="eyebrow">{formatDay(selectedDate(DEMO_NOW, day, timeZone), true)}</p><h1>{destination === 'for-you' ? 'For You' : entity?.name ?? 'Scores'}{tournament && <span className="title-detail">New York · Grand Slam</span>}</h1></div>
-      {entity && !following.includes(destination) ? <button className="follow-button" onClick={() => onToggleFollow(destination)}><Icon name="plus" size={16}/>Follow</button> : liveCount > 0 && <span className="live-count"><i/>{liveCount} live</span>}
+      {entity && !following.includes(destination) ? <button className="follow-button" onClick={() => onToggleFollow(destination)}><Icon name="plus" size={16}/>Follow</button> : liveCount > 0 && <span className="live-count" aria-label={`${liveCount} live ${liveCount === 1 ? 'event' : 'events'}`}><i/>{liveCount} live</span>}
     </div>
     <DateNav day={day} destination={destination} timeZone={timeZone}/>
     <div className="day-meta"><span>{events.length} {events.length === 1 ? 'event' : 'events'}{destination === 'for-you' ? ' across your follows' : ''}</span><span>All times {timezoneLabel(timeZone, DEMO_NOW)}</span></div>
-    <div className="scoreboard-body" onTouchStart={event => { if (event.touches.length !== 1) { touch.current = null; return; } const first = event.touches[0]; touch.current = { x: first.clientX, y: first.clientY }; }} onTouchEnd={event => { const last = event.changedTouches[0]; if (swipe(last.clientX, last.clientY)) event.preventDefault(); }} onTouchCancel={() => { touch.current = null; }}>
+    <div className="scoreboard-body">
       {tennis && <>
         {!tournament && <a href={`#/scores/us-open/${day}`} className="tournament-banner"><span className="tournament-mark"><Icon name="ball" size={29}/></span><span><strong>US Open</strong><small>New York · Grand Slam · Hard court</small></span><Icon name="chevron" size={18}/></a>}
         <div className="tennis-filter"><div className="filter-options" role="group" aria-label="Tennis category">{['All', 'Men', 'Women'].map(item => <button key={item} onClick={() => setCategory(item)} aria-pressed={category === item} className={category === item ? 'active' : ''}>{item === 'All' ? 'All matches' : item}</button>)}</div><span className="secondary">Singles</span></div>
@@ -67,7 +81,7 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
       {events.length > 0 && visible.length === 0 && <div className="empty-state"><h2>No {category.toLowerCase()}’s matches {day}</h2><button className="button-primary" onClick={() => setCategory('All')}>Show all matches</button></div>}
       {events.length > 0 && <div className="endnote"><span className="endnote-line"/><span>You’re all caught up</span><span className="endnote-line"/></div>}
     </div>
-  </>;
+  </div>;
 }
 
 export function FollowRail({ following, destination, day }: { following: string[]; destination: string; day: Day }) {
