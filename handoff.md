@@ -46,7 +46,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 
 ## Tasks 6–17 summary
 
-Implemented and committed on `main` (not pushed).
+Implemented, committed, and pushed on `main`.
 
 Starting with #11, the user authorized Claude to make the product-judgment calls directly rather than waiting for a separate Codex pass — Astra already did the foundational/big-picture work (#1–3), and the user didn't want a second big-picture pass on top of it. Items below still note where a call was a judgment decision rather than a mechanical fix.
 
@@ -151,7 +151,7 @@ The local app runs at `http://localhost:3000`. The repository is already configu
 
 Give Claude one numbered item or one narrowly bounded subtask at a time. Include the exact files, expected behavior, and an explicit instruction not to expand scope. Claude should commit its work. Codex reviews the diff, runs validation, and decides whether the task is complete before moving on.
 
-The **#6–#10 Claude-first tranche** (MLB, NFL, existing degraded/empty states, responsive CSS, and PWA metadata) is implemented and committed. Codex should review each bounded change and run validation before accepting it. The next Codex product-reasoning task is **#11 For You refinement**.
+The **#6–#10 Claude-first tranche** (MLB, NFL, existing degraded/empty states, responsive CSS, and PWA metadata) is implemented, committed, pushed, and accepted after Codex review and validation. The broader #11–#17 work is also implemented, committed, pushed, and currently under Codex review. The next remaining product-reasoning task is **#18 Yahoo comparison review**.
 
 ## Task 4 acceptance criteria
 
