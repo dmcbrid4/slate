@@ -22,7 +22,7 @@ function SportDetail({ event }: { event: Fixture }) {
 
 export function EventDetail({ id, from, timeZone }: { id: string; from: string; timeZone: string }) {
   const event = fixtures.find(item => item.id === id);
-  if (!event) return <div className="empty-state"><h1>Event not found</h1><a className="button-primary" href="#/scores/for-you/today">Back to scores</a></div>;
+  if (!event) return <><a className="back-link" href={`#${from}`}><Icon name="back" size={18}/>Back to scores</a><div className="empty-state"><Icon name="scores" size={32}/><h1>Event not found</h1><p>This event isn’t available. It may have moved or the link may be out of date.</p><a className="button-primary" href={`#${from}`}>Back to scores<Icon name="arrow" size={16}/></a></div></>;
   return <>
     <a className="back-link" href={`#${from}`}><Icon name="back" size={18}/>Back to scores</a>
     <div className="detail-heading"><p className="eyebrow">{event.competition}{event.sport === 'tennis' ? ` · ${event.round}` : event.sport === 'football' ? ' · Week 1' : ''}</p><h1>{event.participants[0].name} <span>vs</span> {event.participants[1].name}</h1></div>

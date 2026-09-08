@@ -211,7 +211,7 @@
   .following-footer { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); padding-top: 18px; align-items: center; font-size: .75rem; color: var(--muted); }
   .following-footer button { border: 0; background: none; color: var(--secondary); font-size: .75rem; min-height: 44px; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
   .empty-state { text-align: center; padding: 50px 14px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  .empty-state h2 { color: var(--strong); font-size: 1.125rem; font-weight: 600; }
+  .empty-state h1, .empty-state h2 { color: var(--strong); font-size: 1.125rem; font-weight: 600; }
   .empty-state p { max-width: 280px; font-size: .875rem; line-height: 1.65; }
   .button-primary { background: var(--strong); color: var(--bg); display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 17px; font-size: .8125rem; border-radius: 8px; border: 0; margin-top: 5px; }
   .small-note { color: var(--muted); font-size: .75rem; margin-top: 23px; line-height: 1.6; }
@@ -254,7 +254,8 @@
   .period-table .total { font-weight: 750; background: var(--hover); }
   .possession-panel { display: flex; align-items: center; gap: 9px; padding: 17px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-size: .8125rem; }
   .possession-panel > span:last-child { color: var(--secondary); margin-left: auto; }
-  .storage-warning { color: var(--secondary); padding: 16px; border: 1px solid var(--line); font-size: .8125rem; line-height: 1.5; }
+  .storage-warning { color: var(--secondary); padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: .8125rem; line-height: 1.5; margin-bottom: 20px; }
+  .storage-warning strong { color: var(--strong); }
 }
 
 @layer responsive {

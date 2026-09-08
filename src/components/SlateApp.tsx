@@ -98,11 +98,11 @@ export function SlateApp() {
     <header className="app-header"><div className="header-inner"><a className="brand" href="#/scores/for-you/today" aria-label="Slate, For You scores"><BrandMark/><span>slate</span></a><nav className="desktop-nav" aria-label="Main navigation">{navItems}</nav><div className="header-actions"><span className="demo-badge">Mock data</span><button className="icon-button theme-toggle" aria-label="Toggle light and dark theme" onClick={toggleTheme}><span className="theme-sun"><Icon name="sun"/></span><span className="theme-moon"><Icon name="moon"/></span></button></div></div></header>
     {view === 'scores' && <div className="rail-container"><FollowRail following={preferences.following} destination={destination} day={day}/></div>}
     <main id="main-content" className={`main-content ${view === 'event' ? 'event-page' : ''}`} tabIndex={-1}>
+      {storageWarning && <p className="storage-warning" role="status"><strong>Storage unavailable.</strong> Your changes will only last for this visit — avoid closing this tab if you want to keep them.</p>}
       {view === 'search' ? <Search following={preferences.following} onToggle={toggleFollow}/>
       : view === 'following' ? <Following following={preferences.following} onToggle={toggleFollow} onMove={move} onReset={() => { save({ ...preferences, following: defaultFollowing }); setNotice('Starter follows restored.'); }}/>
       : view === 'event' ? <EventDetail id={id} from={from} timeZone={timeZone}/>
       : <Scoreboard key={destination} destination={destination} day={day} following={preferences.following} timeZone={timeZone} onToggleFollow={toggleFollow}/>}
-      {storageWarning && <p className="storage-warning" role="status">Browser storage is unavailable. Changes will last for this visit.</p>}
       <footer className="prototype-footer"><BrandMark/><span>Phase 0 · Fictionalized September 2026 slate</span></footer>
     </main>
     <div className="sr-only" role="status" aria-live="polite">{notice}</div>
