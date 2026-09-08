@@ -9,7 +9,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 1. [x] Foundation and product shape — Codex, GPT-6 Astra / high reasoning
 2. [x] Followed navigation and swipe foundation — Codex, GPT-6 Astra / high reasoning
 3. [x] Mobile QA matrix — Codex, GPT-5.6 Sol / high reasoning
-4. [ ] Core navigation polish — Codex, GPT-5.6 Sol / high reasoning
+4. [x] Core navigation polish — Codex, GPT-5.6 Sol / high reasoning
    - Codex defines followed-entity states, active states, history behavior, swipe behavior, and bottom-navigation acceptance criteria.
    - Claude may implement explicitly specified spacing, state, and styling changes.
 5. [ ] Date-navigation polish — Codex, GPT-5.6 Sol / medium reasoning
@@ -56,7 +56,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 
 Give Claude one numbered item or one narrowly bounded subtask at a time. Include the exact files, expected behavior, and an explicit instruction not to expand scope. Claude should commit its work. Codex reviews the diff, runs validation, and decides whether the task is complete before moving on.
 
-The next task is **#4 Core navigation polish**. Codex should define the behavior and acceptance criteria first, then delegate only the implementation portion to Claude.
+The next task is **#5 Date-navigation polish**. Codex should define date-control behavior and edge cases; Claude may implement bounded visual-state and responsive-CSS changes.
 
 ## Task 4 acceptance criteria
 

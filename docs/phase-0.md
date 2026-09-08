@@ -9,11 +9,11 @@ The original repository contained only a README and the brief. There was no fram
 ## Implementation choices
 
 - Next.js App Router, React, strict TypeScript, and a small CSS design system. No UI component library is needed for this prototype’s native links, buttons, inputs, and disclosure controls.
-- One local client experience, with hash-addressed views for scoreboards, Search, Following, and events. Links work on reload and browser back/forward; score/date selection lives in the URL. Event links retain their originating scoreboard. Route changes focus the main content and restore visited scroll positions.
+- One local client experience, with validated hash-addressed views for scoreboards, Search, Following, and events. Links work on reload and browser back/forward; score/date selection lives in the URL. Event links retain their originating scoreboard, and the primary Scores tab returns to the most recently opened destination and day. Route changes focus the main content and restore visited scroll positions.
 - Fixtures are frozen to a fictionalized September weekend, anchored at `2026-09-06T20:42:00Z`. Dates group by the browser’s timezone, including fixtures that cross midnight UTC. A small label keeps the mock state explicit.
 - Temporary discriminated fixture types describe the four score presentations. These are UI fixtures, not a canonical schema, provider interface, or persistence model.
 - For You deduplicates event IDs before display. Direct team/player follows come first; broad tennis and NFL follows get compact sections. Other Premier League results use an expandable disclosure. NFL remains a complete **mock** daily slate, not a claim of real league coverage.
-- The followed rail can scroll independently. Full-page horizontal swipes only change followed destinations; vertical scrolling and short taps are ignored. Date changes use explicit controls. Accessible up/down buttons reorder follows without requiring drag-and-drop; For You stays pinned.
+- The followed rail can scroll independently and keeps its active destination centered without moving the document. Full-page horizontal swipes only change followed destinations; vertical scrolling, short taps, multi-touch gestures, and rail-edge swipes are ignored. Date changes use explicit controls. Accessible up/down buttons reorder follows without requiring drag-and-drop; For You stays pinned.
 - Search spans a curated local set of teams, players, a tournament, competitions, and the unified ATP/WTA collection. Following an entity updates the rail and aggregate feed immediately.
 - One US Open destination combines men’s and women’s singles. Its order of play groups matches by court and start time, with All / Men / Women as secondary filters. Draws, rankings, qualifying, and doubles are deferred.
 - Sport-specific components share small foundations. Soccer has goal scorers; tennis has per-set games, points, and server; baseball has occupied bases, outs, counts, and a line score; football has possession, down/distance, and quarter totals.
@@ -24,9 +24,9 @@ The original repository contained only a README and the brief. There was no fram
 
 ## Verification
 
-Typecheck, ESLint, Node tests, and a production build are configured. Tests cover deduplication, direct-follow relevance, combined tennis, all sport/status combinations, local-date grouping, daylight-saving boundaries, reordering, swipe directions, malformed storage, and fixture score consistency.
+Typecheck, ESLint, Node tests, and a production build are configured. Tests cover deduplication, direct-follow relevance, combined tennis, all sport/status combinations, local-date grouping, daylight-saving boundaries, reordering, swipe directions, route validation, malformed storage, and fixture score consistency.
 
-The app was verified to compile and return HTTP 200 from its local development server. An interactive browser connection was unavailable during implementation; the following visual/touch checklist remains for a real phone.
+The app was verified to compile and return HTTP 200 from its local development server. Browser QA covers 320px, 390px, and 430px mobile viewports; the following checklist remains useful for evaluation on a physical phone.
 
 ## Evaluate on a phone
 
