@@ -41,7 +41,7 @@ export function SoccerScore({ event }: { event: SoccerFixture }) {
       const scorers = event.goals.filter(goal => goal.side === i);
       return <div className="soccer-team-line" key={participant.short}>
         <TeamRow participant={participant} score={event.score?.[i]} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>
-        {event.status === 'live' && scorers.length > 0 && <div className="soccer-scorers">{scorers.map(goal => `${goal.player} ${goal.minute}`).join(', ')}</div>}
+        {event.status !== 'scheduled' && scorers.length > 0 && <div className="soccer-scorers">{scorers.map(goal => `${goal.player} ${goal.minute}`).join(', ')}</div>}
       </div>;
     })}</div>
     {event.status === 'scheduled' && <div className="score-footnote">{event.venue}</div>}
