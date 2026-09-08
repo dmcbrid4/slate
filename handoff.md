@@ -14,30 +14,30 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
    - Claude may implement explicitly specified spacing, state, and styling changes.
 5. [x] Date-navigation polish — Codex, GPT-5.6 Sol / medium reasoning
    - Claude may implement specified visual states, labels, and responsive CSS.
-6. [ ] For You refinement — Codex, GPT-5.6 Sol / high reasoning
-   - Claude may implement approved ordering, section styling, and copy changes.
-7. [ ] Soccer presentation — Codex, GPT-5.6 Sol / medium reasoning
-   - Claude may implement approved soccer card markup and styling.
-8. [ ] Tennis scoring — Codex, GPT-5.6 Sol / high reasoning
-   - Claude may add approved fixtures and presentation details.
-9. [ ] Unified US Open experience — Codex, GPT-5.6 Sol / high reasoning
-   - Claude may implement approved tournament labels, fixtures, tabs, and responsive styling.
-10. [ ] MLB presentation — Claude, GPT-5.6 Terra / medium reasoning
-    - Codex reviews hierarchy, density, and product fit.
-11. [ ] NFL presentation — Claude, GPT-5.6 Terra / medium reasoning
-    - Codex reviews hierarchy, density, and product fit.
-12. [ ] Search — Codex, GPT-5.6 Sol / high reasoning
-    - Claude may implement the approved input, results, empty state, and styling.
-13. [ ] Following management — Codex, GPT-5.6 Sol / medium reasoning
-    - Claude may implement the approved reorder, follow, and unfollow interactions.
-14. [ ] Degraded and empty states — Claude, GPT-5.6 Terra / medium reasoning
-    - Codex reviews scope and state coverage.
-15. [ ] Accessibility pass — Codex, GPT-5.6 Terra / high reasoning
-    - Claude may apply mechanical fixes identified by the audit.
-16. [ ] Responsive visual polish — Claude, GPT-5.6 Terra / medium reasoning
-    - Codex reviews that interaction and information hierarchy remain unchanged.
-17. [ ] PWA polish — Claude, GPT-5.6 Terra / medium reasoning
-    - Limit this to manifest, icon, install metadata, and a basic shell already supported by the prototype.
+6. [ ] MLB presentation — Claude, GPT-5.6 Terra / medium reasoning
+   - Implement only bounded card-state improvements using the existing mock fixture shape. Codex reviews hierarchy, density, and product fit.
+7. [ ] NFL presentation — Claude, GPT-5.6 Terra / medium reasoning
+   - Implement only bounded card-state improvements using the existing mock fixture shape. Codex reviews hierarchy, density, and product fit.
+8. [ ] Degraded and empty states — Claude, GPT-5.6 Terra / medium reasoning
+   - Cover existing no-events, no-follows, missing-event, and storage-warning paths. Do not invent new product states. Codex reviews scope and copy.
+9. [ ] Responsive visual polish — Claude, GPT-5.6 Terra / medium reasoning
+   - Make bounded CSS fixes at existing breakpoints. Do not change navigation, information hierarchy, or data behavior. Codex reviews the diff.
+10. [ ] PWA polish — Claude, GPT-5.6 Terra / medium reasoning
+    - Limit this to the existing manifest, icons, install metadata, and basic shell. Do not add service workers or offline data.
+11. [ ] For You refinement — Codex, GPT-5.6 Sol / high reasoning
+    - Codex decides ranking, grouping, context placement, and information density; Claude may implement the approved result.
+12. [ ] Soccer presentation — Codex, GPT-5.6 Sol / medium reasoning
+    - Codex defines the information hierarchy; Claude may implement approved soccer card markup and styling.
+13. [ ] Tennis scoring — Codex, GPT-5.6 Sol / high reasoning
+    - Codex defines the live score hierarchy; Claude may add approved fixtures and presentation details.
+14. [ ] Unified US Open experience — Codex, GPT-5.6 Sol / high reasoning
+    - Codex defines the tournament experience; Claude may implement approved labels, fixtures, filters, and responsive styling.
+15. [ ] Search — Codex, GPT-5.6 Sol / high reasoning
+    - Codex defines discovery behavior; Claude may implement the approved input, results, empty state, and styling.
+16. [ ] Following management — Codex, GPT-5.6 Sol / medium reasoning
+    - Codex defines reorder and follow behavior; Claude may implement the approved interactions.
+17. [ ] Accessibility pass — Codex, GPT-5.6 Terra / high reasoning
+    - Codex audits the complete experience; Claude may apply mechanical fixes identified by the audit.
 18. [ ] Yahoo comparison review — Codex, GPT-5.6 Sol / high reasoning
 19. [ ] Final corrections — Codex, GPT-5.6 Sol / high reasoning
     - Delegate only isolated CSS or copy corrections.
@@ -56,7 +56,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 
 Give Claude one numbered item or one narrowly bounded subtask at a time. Include the exact files, expected behavior, and an explicit instruction not to expand scope. Claude should commit its work. Codex reviews the diff, runs validation, and decides whether the task is complete before moving on.
 
-The next task is **#6 For You refinement**. Codex should decide ranking, grouping, context placement, and information density; Claude may implement bounded ordering, styling, and copy changes.
+The next execution tranche is **#6–#10, Claude-first**: MLB, NFL, existing degraded/empty states, responsive CSS, and PWA metadata. Codex should review each bounded change and run validation before accepting it. The next Codex product-reasoning task is **#11 For You refinement**.
 
 ## Task 4 acceptance criteria
 
