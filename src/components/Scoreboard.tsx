@@ -6,6 +6,9 @@ import { days, formatDay, formatFullDay, isPersonal, selectEvents, selectedDate,
 import { Icon } from './Icon';
 import { Mark, ScoreCard } from './ScoreCard';
 
+const courtOrder = ['Arthur Ashe Stadium', 'Louis Armstrong Stadium'];
+const courtRank = (court: string) => { const i = courtOrder.indexOf(court); return i === -1 ? courtOrder.length : i; };
+
 export function DateNav({ day, destination, timeZone }: { day: Day; destination: string; timeZone: string }) {
   return <nav className="date-nav" aria-label="Scoreboard date">{days.map(item => {
     const date = selectedDate(DEMO_NOW, item, timeZone);
@@ -96,7 +99,7 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
           : <EventGroup key={broad.id} title={broad.shortName} subtitle={broad.sport === 'football' ? 'Week 1' : undefined} events={groupEvents} timeZone={timeZone} from={from}/>)}
       </> : tournament ? <>
         <div className="section-heading"><h2>Order of play</h2><span className="secondary">Men + Women</span></div>
-        {[...new Set(visible.map(event => event.venue))].map(court => <EventGroup key={court} title={court} events={visible.filter(event => event.venue === court).sort((a, b) => a.start.localeCompare(b.start))} timeZone={timeZone} from={from}/>)}
+        {[...new Set(visible.map(event => event.venue))].sort((a, b) => courtRank(a) - courtRank(b)).map(court => <EventGroup key={court} title={court} events={visible.filter(event => event.venue === court).sort((a, b) => a.start.localeCompare(b.start))} timeZone={timeZone} from={from}/>)}
       </> : <EventGroup title={tennis ? 'Matches' : entity?.kind === 'Team' ? 'Matches' : entity?.name ?? 'Events'} events={visible} timeZone={timeZone} from={from}/>}
       {events.length > 0 && visible.length === 0 && <div className="empty-state"><h2>No {category.toLowerCase()}’s matches {day}</h2><button className="button-primary" onClick={() => setCategory('All')}>Show all matches</button></div>}
       {events.length > 0 && <div className="endnote"><span className="endnote-line"/><span>You’re all caught up</span><span className="endnote-line"/></div>}
