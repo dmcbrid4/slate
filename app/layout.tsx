@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Slate — Scores',
   description: 'Your teams, tours, and competitions. A personal sports scoreboard.',
   applicationName: 'Slate',
-  icons: { apple: '/apple-touch-icon.png' },
+  icons: { icon: [{ url: '/icon.svg', type: 'image/svg+xml' }], apple: '/apple-touch-icon.png' },
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Slate' },
 };
 
