@@ -80,10 +80,12 @@
   .live-count { font-size: .8125rem; font-weight: 550; color: var(--live); display: flex; align-items: center; gap: 6px; white-space: nowrap; padding-top: 18px; }
   .live-count i, .event-status.live i { height: 5px; width: 5px; background: currentColor; border-radius: 50%; }
   .date-nav { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--selected); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
-  .date-nav a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 4px; color: var(--secondary); border-radius: 7px; font-size: .875rem; font-weight: 500; }
-  .date-nav a small { font-size: .75rem; font-weight: 450; color: var(--muted); }
+  .date-nav a { display: flex; min-width: 0; min-height: 54px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 4px; color: var(--secondary); border-radius: 7px; font-size: .875rem; font-weight: 500; }
+  .date-nav a time { font-size: .75rem; font-weight: 450; color: var(--muted); }
+  .date-nav a.calendar-today { color: var(--strong); font-weight: 650; }
+  .date-nav a.calendar-today:not(.selected) > span::after { content: ''; display: inline-block; width: 4px; height: 4px; margin: 0 0 2px 6px; border-radius: 50%; background: var(--accent); opacity: .7; }
   .date-nav a.selected { background: var(--surface-raised); color: var(--strong); box-shadow: 0 1px 3px #0000000b; font-weight: 650; }
-  .date-nav a.selected small { color: var(--secondary); }
+  .date-nav a.selected time { color: var(--secondary); }
   .date-nav a:hover:not(.selected) { background: var(--hover); }
   .day-meta { display: flex; justify-content: space-between; margin: 13px 1px 23px; color: var(--muted); font-size: .75rem; }
   .scoreboard-view { touch-action: pan-y; }
@@ -268,7 +270,7 @@
     .page-heading { margin-bottom: 26px; }
     h1 { font-size: 2rem; }
     .date-nav a { flex-direction: row; gap: 8px; padding: 12px 10px; }
-    .date-nav a small { font-size: .75rem; }
+    .date-nav a time { font-size: .75rem; }
     .day-meta { margin-bottom: 28px; }
     .event-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 12px; }
     .event-grid > .score-card:only-child { grid-column: 1 / -1; }

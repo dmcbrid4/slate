@@ -19,6 +19,10 @@ export function formatDay(key: string, long = false): string {
   return new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', weekday: long ? 'long' : 'short', month: 'short', day: 'numeric' }).format(new Date(`${key}T12:00:00Z`));
 }
 
+export function formatFullDay(key: string): string {
+  return new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(`${key}T12:00:00Z`));
+}
+
 export function formatTime(instant: string, timeZone: string): string {
   return new Intl.DateTimeFormat('en-US', { timeZone, hour: 'numeric', minute: '2-digit' }).format(new Date(instant));
 }

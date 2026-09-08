@@ -3,7 +3,7 @@ import test from 'node:test';
 import { defaultFollowing, entities } from '../src/data/entities.ts';
 import { DEMO_NOW, fixtures } from '../src/data/fixtures.ts';
 import { DEFAULT_SCORE_ROUTE, parseScoreRoute } from '../src/lib/navigation.ts';
-import { dateKey, isPersonal, reorderFollowing, selectEvents, selectedDate, swipeDestination } from '../src/lib/scores.ts';
+import { dateKey, formatFullDay, isPersonal, reorderFollowing, selectEvents, selectedDate, swipeDestination } from '../src/lib/scores.ts';
 import { parsePreferences } from '../src/lib/preferences.ts';
 
 const zone = 'America/New_York';
@@ -59,6 +59,7 @@ test('date controls use calendar days across DST, year changes, and extreme offs
   assert.equal(selectedDate('2026-11-01T16:00:00Z', 'yesterday', zone), '2026-10-31');
   assert.equal(selectedDate('2026-12-31T23:30:00Z', 'today', 'Pacific/Kiritimati'), '2027-01-01');
   assert.equal(selectedDate('2027-01-01T06:00:00Z', 'yesterday', zone), '2026-12-31');
+  assert.equal(formatFullDay('2027-01-01'), 'Friday, January 1, 2027');
 });
 
 test('reordering follows changes only order and respects both boundaries', () => {

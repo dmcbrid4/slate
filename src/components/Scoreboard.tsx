@@ -2,14 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { entities, entityById } from '@/data/entities';
 import { DEMO_NOW, fixtures } from '@/data/fixtures';
 import type { Day, Fixture } from '@/data/types';
-import { days, formatDay, isPersonal, selectEvents, selectedDate, swipeDestination, timezoneLabel } from '@/lib/scores';
+import { days, formatDay, formatFullDay, isPersonal, selectEvents, selectedDate, swipeDestination, timezoneLabel } from '@/lib/scores';
 import { Icon } from './Icon';
 import { Mark, ScoreCard } from './ScoreCard';
 
 export function DateNav({ day, destination, timeZone }: { day: Day; destination: string; timeZone: string }) {
-  return <nav className="date-nav" aria-label="Scoreboard date">{days.map(item => <a href={`#/scores/${destination}/${item}`} className={day === item ? 'selected' : ''} aria-current={day === item ? 'date' : undefined} key={item}>
-    <span>{item[0].toUpperCase() + item.slice(1)}</span><small>{formatDay(selectedDate(DEMO_NOW, item, timeZone)).split(', ')[1]}</small>
-  </a>)}</nav>;
+  return <nav className="date-nav" aria-label="Scoreboard date">{days.map(item => {
+    const date = selectedDate(DEMO_NOW, item, timeZone);
+    const label = item[0].toUpperCase() + item.slice(1);
+    const classes = [day === item ? 'selected' : '', item === 'today' ? 'calendar-today' : ''].filter(Boolean).join(' ');
+    return <a href={`#/scores/${destination}/${item}`} className={classes} aria-label={`${label}, ${formatFullDay(date)}`} aria-current={day === item ? 'date' : undefined} key={item}>
+      <span>{label}</span><time dateTime={date}>{formatDay(date).split(', ')[1]}</time>
+    </a>;
+  })}</nav>;
 }
 
 function EventGroup({ title, subtitle, events, timeZone, from, tournament = false }: { title: string; subtitle?: string; events: Fixture[]; timeZone: string; from: string; tournament?: boolean }) {
@@ -30,6 +35,7 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
   const entity = entityById[destination];
   const tennis = entity?.sport === 'tennis';
   const tournament = destination === 'us-open';
+  const activeDate = selectedDate(DEMO_NOW, day, timeZone);
   const visible = events.filter(event => category === 'All' || event.sport !== 'tennis' || event.category === category);
   const liveCount = events.filter(event => event.status === 'live').length;
   const startSwipe = (x: number, y: number, touchCount: number) => {
@@ -60,7 +66,7 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
     }}
     onTouchCancel={() => { touch.current = null; }}
   >
-    <div className="page-heading"><div><p className="eyebrow">{formatDay(selectedDate(DEMO_NOW, day, timeZone), true)}</p><h1>{destination === 'for-you' ? 'For You' : entity?.name ?? 'Scores'}{tournament && <span className="title-detail">New York · Grand Slam</span>}</h1></div>
+    <div className="page-heading"><div><p className="eyebrow"><time dateTime={activeDate}>{formatDay(activeDate, true)}</time></p><h1>{destination === 'for-you' ? 'For You' : entity?.name ?? 'Scores'}{tournament && <span className="title-detail">New York · Grand Slam</span>}</h1></div>
       {entity && !following.includes(destination) ? <button className="follow-button" onClick={() => onToggleFollow(destination)}><Icon name="plus" size={16}/>Follow</button> : liveCount > 0 && <span className="live-count" aria-label={`${liveCount} live ${liveCount === 1 ? 'event' : 'events'}`}><i/>{liveCount} live</span>}
     </div>
     <DateNav day={day} destination={destination} timeZone={timeZone}/>
