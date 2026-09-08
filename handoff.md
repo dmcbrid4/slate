@@ -20,7 +20,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
    - Implement only bounded card-state improvements using the existing mock fixture shape. Codex reviews hierarchy, density, and product fit.
 8. [x] Degraded and empty states — Claude, GPT-5.6 Terra / medium reasoning
    - Cover existing no-events, no-follows, missing-event, and storage-warning paths. Do not invent new product states. Codex reviews scope and copy.
-9. [ ] Responsive visual polish — Claude, GPT-5.6 Terra / medium reasoning
+9. [x] Responsive visual polish — Claude, GPT-5.6 Terra / medium reasoning
    - Make bounded CSS fixes at existing breakpoints. Do not change navigation, information hierarchy, or data behavior. Codex reviews the diff.
 10. [ ] PWA polish — Claude, GPT-5.6 Terra / medium reasoning
     - Limit this to the existing manifest, icons, install metadata, and basic shell. Do not add service workers or offline data.
