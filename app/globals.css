@@ -125,6 +125,7 @@
   [data-theme='dark'] .entity-mark:not(.neutral) { filter: brightness(.84) saturate(.78); }
   @media (prefers-color-scheme: dark) { [data-theme='system'] .entity-mark:not(.neutral) { filter: brightness(.84) saturate(.78); } }
   .score-footnote { color: var(--secondary); font-size: .75rem; margin-top: 12px; min-height: 15px; line-height: 1.5; }
+  .score-footnote strong { color: var(--text); font-weight: 600; }
   .soccer-scorers { padding: 4px 0 0 34px; color: var(--secondary); font-size: .75rem; line-height: 1.4; }
   .context { margin: 12px -15px -13px; border-top: 1px solid var(--line); padding: 10px 14px; color: var(--secondary); display: flex; align-items: flex-start; gap: 7px; font-size: .75rem; line-height: 1.5; }
   .context svg { margin-top: 2px; }

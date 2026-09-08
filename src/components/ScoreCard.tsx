@@ -6,11 +6,23 @@ export function Mark({ mark, color, small = false }: { mark: string; color: stri
   return <span className={`entity-mark ${color} ${small ? 'small' : ''}`} aria-hidden="true">{mark}</span>;
 }
 
+function ordinal(n: number) {
+  const j = n % 10, k = n % 100;
+  if (j === 1 && k !== 11) return `${n}st`;
+  if (j === 2 && k !== 12) return `${n}nd`;
+  if (j === 3 && k !== 13) return `${n}rd`;
+  return `${n}th`;
+}
+
+function outsLabel(n: number) {
+  return `${n} out${n === 1 ? '' : 's'}`;
+}
+
 export function Status({ event, timeZone }: { event: Fixture; timeZone: string }) {
   if (event.status === 'scheduled') return <span className="event-status">{formatTime(event.start, timeZone)}</span>;
   if (event.status === 'final') return <span className="event-status final">Final</span>;
   const label = event.sport === 'soccer' ? event.minute
-    : event.sport === 'baseball' ? `${event.half === 'Top' ? 'Top' : 'Bot'} ${event.inning}`
+    : event.sport === 'baseball' ? `${event.half === 'Top' ? 'Top' : 'Bot'} ${ordinal(event.inning ?? 1)}`
     : event.sport === 'football' ? event.clock : 'Live';
   return <span className="event-status live"><i/>{label}</span>;
 }
@@ -59,9 +71,9 @@ export function BaseDiamond({ bases }: { bases: [boolean, boolean, boolean] }) {
 export function BaseballScore({ event }: { event: BaseballFixture }) {
   return <>
     <div className="baseball-score"><div className="team-lines">{event.participants.map((participant, i) => <TeamRow key={participant.short} participant={participant} score={event.score?.[i]} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>)}</div>
-      {event.status === 'live' && event.bases && <div className="diamond-wrap"><BaseDiamond bases={event.bases}/><span className="outs" aria-label={`${event.outs} out`}>{[0, 1, 2].map(i => <i key={i} className={i < (event.outs ?? 0) ? 'filled' : ''}/>)}</span></div>}
+      {event.status === 'live' && event.bases && <div className="diamond-wrap"><BaseDiamond bases={event.bases}/><span className="outs" aria-label={outsLabel(event.outs ?? 0)}>{[0, 1, 2].map(i => <i key={i} className={i < (event.outs ?? 0) ? 'filled' : ''}/>)}</span></div>}
     </div>
-    <div className="score-footnote">{event.status === 'live' ? `${event.batter} batting · ${event.count} count · ${event.outs} out` : event.status === 'final' ? event.decision : `${event.pitchers[0].split(' ').at(-1)} vs ${event.pitchers[1].split(' ').at(-1)}`}</div>
+    <div className="score-footnote">{event.status === 'live' ? <><strong>{event.batter}</strong> batting · {event.count} count · {outsLabel(event.outs ?? 0)}</> : event.status === 'final' ? event.decision : `${event.pitchers[0].split(' ').at(-1)} vs ${event.pitchers[1].split(' ').at(-1)}`}</div>
   </>;
 }
 
