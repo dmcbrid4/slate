@@ -14,11 +14,11 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
    - Claude may implement explicitly specified spacing, state, and styling changes.
 5. [x] Date-navigation polish — Codex, GPT-5.6 Sol / medium reasoning
    - Claude may implement specified visual states, labels, and responsive CSS.
-6. [ ] MLB presentation — Claude, GPT-5.6 Terra / medium reasoning
+6. [x] MLB presentation — Claude, GPT-5.6 Terra / medium reasoning
    - Implement only bounded card-state improvements using the existing mock fixture shape. Codex reviews hierarchy, density, and product fit.
-7. [ ] NFL presentation — Claude, GPT-5.6 Terra / medium reasoning
+7. [x] NFL presentation — Claude, GPT-5.6 Terra / medium reasoning
    - Implement only bounded card-state improvements using the existing mock fixture shape. Codex reviews hierarchy, density, and product fit.
-8. [ ] Degraded and empty states — Claude, GPT-5.6 Terra / medium reasoning
+8. [x] Degraded and empty states — Claude, GPT-5.6 Terra / medium reasoning
    - Cover existing no-events, no-follows, missing-event, and storage-warning paths. Do not invent new product states. Codex reviews scope and copy.
 9. [ ] Responsive visual polish — Claude, GPT-5.6 Terra / medium reasoning
    - Make bounded CSS fixes at existing breakpoints. Do not change navigation, information hierarchy, or data behavior. Codex reviews the diff.
