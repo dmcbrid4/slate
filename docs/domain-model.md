@@ -113,12 +113,12 @@ interface Collection {
 
 interface CollectionMember {
   collectionId: string;
-  target: FollowTarget;
+  target: Exclude<FollowTarget, { type: 'collection' }>;
   position: number;
 }
 ```
 
-Collections are small, Slate-curated lists of canonical targets. Phase 1 should use explicit members rather than inventing a general rules engine. The ATP/WTA collection can include the supported main-tour competitions and competition groups.
+Collections are small, Slate-curated lists of canonical targets. Collection nesting is intentionally excluded to avoid cycles. Phase 1 should use explicit members rather than inventing a general rules engine. The ATP/WTA collection can include the supported main-tour competitions and competition groups.
 
 ### Event and EventParticipant
 
@@ -204,13 +204,12 @@ interface ProviderEntityMapping {
   providerId: string;
   providerEntityType: string;
   providerEntityId: string;
-  canonicalType:
-    | 'participant'
-    | 'competition'
-    | 'competition_group'
-    | 'season'
-    | 'event';
-  canonicalId: string;
+  canonical:
+    | { type: 'participant'; id: string }
+    | { type: 'competition'; id: string }
+    | { type: 'competition_group'; id: string }
+    | { type: 'season'; id: string }
+    | { type: 'event'; id: string };
 }
 ```
 

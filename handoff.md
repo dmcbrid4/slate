@@ -48,7 +48,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 
 21. [x] Architecture and domain shape — Codex, GPT-6 Astra / high reasoning
     - Decisions are recorded in `docs/domain-model.md`, `docs/providers.md`, and `docs/phase-1.md`. Stop here before implementation.
-22. [ ] Canonical domain primitives and invariants — Codex, GPT-5.6 Sol / high reasoning
+22. [x] Canonical domain primitives and invariants — Codex, GPT-5.6 Sol / high reasoning
 23. [ ] Canonical mock seed and scoreboard read-model projector — Codex, GPT-5.6 Sol / high reasoning
 24. [ ] Follow targeting, relevance provenance, and deduplication — Codex, GPT-5.6 Sol / high reasoning
 25. [ ] Provider contracts and mock normalizer — Codex, GPT-5.6 Sol / high reasoning
@@ -61,6 +61,8 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 30. [ ] Phase 1 validation and handoff — Codex, GPT-5.6 Sol / high reasoning
 
 Phase 1 implementation must preserve the Phase 0 UX and must not include a real sports provider, auth, polling, queues, Redis, workers, SSE, WebSockets, or Phase 2 tennis integration.
+
+Task #22 added pure domain modules under `src/domain`: opaque Slate-owned IDs; canonical records for sports, participants, competitions, groups, seasons, events, follows, collections, providers, and mappings; discriminated state for all four sports; record constructors; and cross-record graph invariants. The Phase 0 fixtures and UI remain unchanged. Focused tests cover all sport states, timestamps, identity, sport consistency, event sides, follow targets and positions, and provider identity uniqueness.
 
 ## Tasks 6–17 summary
 
