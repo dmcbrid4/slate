@@ -40,6 +40,12 @@ The app was verified to compile and return HTTP 200 from its local development s
 7. Open an event far down the feed, then use Back to scores and browser Back. Check retained date, destination, and scroll position.
 8. Check at 320px, desktop width, and 200% text zoom. Try keyboard navigation, focus rings, and a screen reader. Tables may scroll horizontally on small screens.
 
+## Yahoo comparison review
+
+At a 390 × 844 mobile viewport, Slate reaches followed destinations, Yesterday / Today / Tomorrow, and sport-specific live state within the first screen. Yahoo Sports' public web experience puts the same score-checking task among broad sport navigation, news, fantasy, video, betting information, promotions, and advertising. For the narrow job in the brief, Slate already feels cleaner and more direct.
+
+The review found no missing core flow. The final Phase 0 correction pass should only reassess swipe discoverability, first-viewport density at 320px and 390px, and whether placeholder monograms materially impede recognition. Production data trust, freshness, and coverage remain outside Phase 0.
+
 ## Next small iteration
 
-Use the prototype on a phone for a short Yahoo-vs-Slate comparison. Tune only the For You ordering, card density, and follow-swipe discoverability based on that session. Replace the monogram marks with vetted local crests/flags if they materially improve scanning. Stay in Phase 0 until this core loop feels convincing.
+Run the bounded final-corrections pass from the comparison review, then complete final validation and handoff. Stay in Phase 0 until this core loop feels convincing.

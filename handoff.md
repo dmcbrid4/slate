@@ -38,7 +38,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - Codex defines reorder and follow behavior; Claude may implement the approved interactions.
 17. [x] Accessibility pass — Codex, GPT-5.6 Terra / high reasoning
     - Codex audits the complete experience; Claude may apply mechanical fixes identified by the audit.
-18. [ ] Yahoo comparison review — Codex, GPT-5.6 Sol / high reasoning
+18. [x] Yahoo comparison review — Codex, GPT-5.6 Sol / high reasoning
 19. [ ] Final corrections — Codex, GPT-5.6 Sol / high reasoning
     - Delegate only isolated CSS or copy corrections.
 20. [ ] Final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
@@ -151,7 +151,30 @@ The local app runs at `http://localhost:3000`. The repository is already configu
 
 Give Claude one numbered item or one narrowly bounded subtask at a time. Include the exact files, expected behavior, and an explicit instruction not to expand scope. Claude should commit its work. Codex reviews the diff, runs validation, and decides whether the task is complete before moving on.
 
-The **#6–#10 Claude-first tranche** (MLB, NFL, existing degraded/empty states, responsive CSS, and PWA metadata) is implemented, committed, pushed, and accepted after Codex review and validation. The broader #11–#17 work is also implemented, committed, pushed, and currently under Codex review. The next remaining product-reasoning task is **#18 Yahoo comparison review**.
+The **#6–#10 Claude-first tranche** (MLB, NFL, existing degraded/empty states, responsive CSS, and PWA metadata) is implemented, committed, pushed, and accepted after Codex review and validation. The broader #11–#17 work is also implemented, committed, pushed, and accepted after Codex review. The Yahoo comparison in #18 is complete. The next task is **#19 Final corrections**.
+
+## Task 18 Yahoo comparison findings
+
+Codex compared Slate at a 390 × 844 mobile viewport with Yahoo Sports' public web experience on September 8, 2026. The review focused on the brief's core job: quickly checking the sports and entities a person follows.
+
+**Verdict:** Slate already feels cleaner and more useful for this specific job. Its first viewport presents followed destinations, explicit date controls, and useful live score state. Yahoo devotes substantially more attention to global sport navigation, news, fantasy, video, betting lines, promotions, and advertising before establishing a personal score-checking loop.
+
+Slate's strongest advantages are:
+
+- The followed-entity rail makes Tottenham, Red Sox, Diamondbacks, Premier League, NFL, and unified ATP/WTA primary destinations. Yahoo begins with broad league categories and requires sign-in for its My Teams experience.
+- Yesterday, Today, and Tomorrow form one stable, explicit control on every Slate scoreboard. Yahoo's home score strip does not present the same universal three-day model as clearly.
+- Slate cards expose the live state that matters for each sport without surrounding media clutter: scorers for soccer; sets, games, point, and server for tennis; inning, count, outs, and bases for MLB; and quarter, possession, and down/distance for NFL.
+- The US Open works as one combined tournament destination with ATP and WTA matches organized by court. This is more coherent than treating tennis primarily as one item in a large global sports menu and the US Open as a separate topic.
+- Event detail pages preserve the originating scoreboard, selected date, and scroll position, so checking one event does not break the core loop.
+- Search and Following are limited to score-relevant entities and device-local management. They do not compete with content search, account prompts, or fantasy products.
+
+The review also identified three bounded Phase 0 questions for #19:
+
+1. Decide whether the followed rail needs a subtle visual cue that full-page horizontal swiping is available; the rail itself remains understandable through tapping and horizontal scrolling.
+2. Recheck the first viewport and For You density at 320px and 390px after all accepted changes, adjusting only spacing or copy if the most useful live state falls below the fold.
+3. Decide whether local placeholder monograms materially slow team recognition. Replace them only if vetted local assets are already available and the change stays small; official asset sourcing is not required for Phase 0.
+
+The comparison does not establish production trust, freshness, or coverage because Phase 0 intentionally uses deterministic mock data. Those are later concerns and do not change the Phase 0 UX verdict.
 
 ## Task 4 acceptance criteria
 
