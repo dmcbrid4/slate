@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { entities, entityById } from '@/data/entities';
 import { DEMO_NOW, fixtures } from '@/data/fixtures';
 import type { Day, Fixture } from '@/data/types';
@@ -51,6 +51,9 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
       const first = event.touches[0];
       startSwipe(first?.clientX ?? 0, first?.clientY ?? 0, event.touches.length);
     }}
+    onTouchMove={event => {
+      if (event.touches.length !== 1) touch.current = null;
+    }}
     onTouchEnd={event => {
       const last = event.changedTouches[0];
       if (last && swipe(last.clientX, last.clientY)) event.preventDefault();
@@ -85,12 +88,16 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
 }
 
 export function FollowRail({ following, destination, day }: { following: string[]; destination: string; day: Day }) {
+  const railRef = useRef<HTMLElement>(null);
   const selectedRef = useRef<HTMLAnchorElement>(null);
-  // Keep the active destination visible when full-page swipes advance the rail.
-  const attachSelected = (node: HTMLAnchorElement | null) => {
-    selectedRef.current = node;
-    if (node) node.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-  };
+  useEffect(() => {
+    const rail = railRef.current;
+    const selected = selectedRef.current;
+    if (!rail || !selected) return;
+    const target = selected.offsetLeft + selected.offsetWidth / 2 - rail.clientWidth / 2;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    rail.scrollTo({ left: Math.max(0, target), behavior: reducedMotion ? 'auto' : 'smooth' });
+  }, [destination, following]);
   const destinations = [{ id: 'for-you', shortName: 'For You' }, ...following.map(id => entities.find(entity => entity.id === id)).filter(entity => entity !== undefined)];
-  return <nav className="follow-rail" aria-label="Followed scoreboards">{destinations.map(entity => <a key={entity.id} ref={destination === entity.id ? attachSelected : undefined} href={`#/scores/${entity.id}/${day}`} aria-current={destination === entity.id ? 'page' : undefined} className={destination === entity.id ? 'active' : ''}>{entity.shortName}</a>)}<a className="rail-add" href="#/search" aria-label="Find more to follow"><Icon name="plus" size={16}/></a></nav>;
+  return <nav ref={railRef} className="follow-rail" aria-label="Followed scoreboards">{destinations.map(entity => <a key={entity.id} ref={destination === entity.id ? selectedRef : undefined} href={`#/scores/${entity.id}/${day}`} aria-current={destination === entity.id ? 'page' : undefined} className={destination === entity.id ? 'active' : ''}>{entity.shortName}</a>)}<a className="rail-add" href="#/search" aria-label="Find more to follow"><Icon name="plus" size={16}/></a></nav>;
 }

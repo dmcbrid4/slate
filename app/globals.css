@@ -65,14 +65,14 @@
   }
   .desktop-nav { display: none; }
   .rail-container { background: var(--surface); border-bottom: 1px solid var(--line); }
-  .follow-rail { display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 20px; gap: 27px; margin: auto; max-width: 800px; align-items: stretch; }
+  .follow-rail { display: flex; overflow-x: auto; overscroll-behavior-inline: contain; scroll-padding-inline: 20px; scroll-snap-type: x proximity; scrollbar-width: none; padding: 0 20px; gap: 27px; margin: auto; max-width: 800px; align-items: stretch; }
   .follow-rail::-webkit-scrollbar { display: none; }
-  .follow-rail a { display: flex; align-items: center; min-height: 55px; white-space: nowrap; font-size: .875rem; color: var(--secondary); position: relative; font-weight: 500; }
+  .follow-rail a { display: flex; align-items: center; min-height: 55px; white-space: nowrap; scroll-snap-align: center; font-size: .875rem; color: var(--secondary); position: relative; font-weight: 500; }
   .follow-rail a.active { color: var(--strong); font-weight: 650; }
   .follow-rail a.active::after { content: ''; position: absolute; bottom: 0; height: 2px; background: var(--strong); left: 0; right: 0; }
   .follow-rail a:hover { color: var(--strong); }
   .follow-rail .rail-add { min-width: 30px; }
-  .main-content { max-width: 800px; margin: 0 auto; padding: 25px 20px 105px; }
+  .main-content { max-width: 800px; margin: 0 auto; padding: 25px 20px calc(105px + env(safe-area-inset-bottom)); }
   .main-content:focus { outline: none; }
   .page-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 23px; min-height: 55px; }
   h1 { color: var(--strong); font-size: 1.85rem; font-weight: 690; letter-spacing: -.045em; line-height: 1.15; }
