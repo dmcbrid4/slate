@@ -2,38 +2,56 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { defaultFollowing, entities } from '../src/data/entities.ts';
 import { DEMO_NOW, fixtures } from '../src/data/fixtures.ts';
+import { isPersonal, selectScoreboardEvents } from '../src/data/scoreboard.ts';
 import { DEFAULT_SCORE_ROUTE, parseScoreRoute } from '../src/lib/navigation.ts';
-import { dateKey, formatFullDay, isPersonal, reorderFollowing, selectEvents, selectedDate, swipeDestination } from '../src/lib/scores.ts';
+import { dateKey, formatFullDay, reorderFollowing, selectedDate, swipeDestination } from '../src/lib/scores.ts';
 import { parsePreferences } from '../src/lib/preferences.ts';
 
 const zone = 'America/New_York';
 
 test('For You deduplicates overlapping team, player, tour, and competition follows', () => {
   const followed = [...defaultFollowing, 'alcaraz', 'sinner', 'us-open'];
-  const selected = selectEvents([...fixtures, ...fixtures], 'for-you', followed, 'today', zone, DEMO_NOW);
+  const selected = selectScoreboardEvents('for-you', followed, 'today', zone, DEMO_NOW);
   assert.equal(selected.filter(event => event.id === 'tot-liv').length, 1);
   assert.equal(selected.filter(event => event.id === 'alcaraz-sinner').length, 1);
   assert.equal(selected.length, new Set(selected.map(event => event.id)).size);
+
+  const tennis = selected.find(event => event.id === 'alcaraz-sinner');
+  assert.ok(tennis);
+  assert.deepEqual(tennis.relevance.matches.map(match => match.target.type), [
+    'collection',
+    'participant',
+    'participant',
+    'competition_group',
+  ]);
+  assert.equal(tennis.relevance.primaryMatch?.target.type, 'participant');
+  assert.equal(tennis.relevance.matches[0].via?.type, 'competition_group');
 });
 
 test('direct team and player follows precede broad league follows', () => {
-  const selected = selectEvents(fixtures, 'for-you', defaultFollowing, 'today', zone, DEMO_NOW);
-  assert.ok(isPersonal(selected[0], defaultFollowing));
-  const lastPersonal = selected.findLastIndex(event => isPersonal(event, defaultFollowing));
-  const firstBroad = selected.findIndex(event => !isPersonal(event, defaultFollowing));
+  const selected = selectScoreboardEvents('for-you', defaultFollowing, 'today', zone, DEMO_NOW);
+  assert.ok(isPersonal(selected[0]));
+  const lastPersonal = selected.findLastIndex(event => isPersonal(event));
+  const firstBroad = selected.findIndex(event => !isPersonal(event));
   assert.ok(lastPersonal < firstBroad);
 });
 
 test('following/unfollowing changes relevance without hiding an overlapping league follow', () => {
-  assert.equal(selectEvents(fixtures, 'for-you', [], 'today', zone, DEMO_NOW).length, 0);
-  const leagueOnly = selectEvents(fixtures, 'for-you', ['premier-league'], 'today', zone, DEMO_NOW);
+  assert.equal(selectScoreboardEvents('for-you', [], 'today', zone, DEMO_NOW).length, 0);
+  const leagueOnly = selectScoreboardEvents('for-you', ['premier-league'], 'today', zone, DEMO_NOW);
   assert.ok(leagueOnly.some(event => event.id === 'tot-liv'));
   assert.ok(!leagueOnly.some(event => event.id === 'nyy-bos'));
+
+  const teamAndLeague = selectScoreboardEvents('for-you', ['tottenham', 'premier-league'], 'today', zone, DEMO_NOW);
+  const tottenham = teamAndLeague.find(event => event.id === 'tot-liv');
+  assert.ok(tottenham);
+  assert.equal(teamAndLeague.filter(event => event.id === 'tot-liv').length, 1);
+  assert.deepEqual(tottenham.relevance.matches.map(match => match.target.type), ['participant', 'competition']);
 });
 
 test('ATP/WTA and US Open combine both tours by default', () => {
   for (const destination of ['atp-wta', 'us-open']) {
-    const selected = selectEvents(fixtures, destination, [], 'today', zone, DEMO_NOW);
+    const selected = selectScoreboardEvents(destination, [], 'today', zone, DEMO_NOW);
     assert.deepEqual(new Set(selected.map(event => event.sport === 'tennis' ? event.category : null)), new Set(['Men', 'Women']));
   }
 });
@@ -49,8 +67,8 @@ test('midnight UTC events appear on the viewer’s local calendar date', () => {
   assert.ok(event);
   assert.equal(dateKey(event.start, zone), '2026-09-07');
   assert.equal(dateKey(event.start, 'Asia/Tokyo'), '2026-09-08');
-  assert.ok(selectEvents(fixtures, 'nfl', [], 'tomorrow', zone, DEMO_NOW).some(item => item.id === event.id));
-  assert.ok(selectEvents(fixtures, 'nfl', [], 'tomorrow', 'Asia/Tokyo', DEMO_NOW).some(item => item.id === event.id));
+  assert.ok(selectScoreboardEvents('nfl', [], 'tomorrow', zone, DEMO_NOW).some(item => item.id === event.id));
+  assert.ok(selectScoreboardEvents('nfl', [], 'tomorrow', 'Asia/Tokyo', DEMO_NOW).some(item => item.id === event.id));
 });
 
 test('date controls use calendar days across DST, year changes, and extreme offsets', () => {

@@ -1,4 +1,11 @@
-import type { BaseballFixture, Fixture, FootballFixture, Participant, SoccerFixture, TennisFixture } from '@/data/types';
+import type {
+  BaseballScoreboardEvent,
+  FootballScoreboardEvent,
+  ScoreboardEvent,
+  ScoreboardParticipant,
+  SoccerScoreboardEvent,
+  TennisScoreboardEvent,
+} from '@/read-models/scoreboard';
 import { eventHref, formatTime } from '@/lib/scores';
 import { Icon } from './Icon';
 
@@ -18,16 +25,17 @@ function outsLabel(n: number) {
   return `${n} out${n === 1 ? '' : 's'}`;
 }
 
-export function Status({ event, timeZone }: { event: Fixture; timeZone: string }) {
+export function Status({ event, timeZone }: { event: ScoreboardEvent; timeZone: string }) {
   if (event.status === 'scheduled') return <span className="event-status">{formatTime(event.start, timeZone)}</span>;
   if (event.status === 'final') return <span className="event-status final">Final</span>;
-  const label = event.sport === 'soccer' ? event.minute
-    : event.sport === 'baseball' ? `${event.half === 'Top' ? 'Top' : 'Bot'} ${ordinal(event.inning ?? 1)}`
-    : event.sport === 'football' ? event.clock : 'Live';
+  if (event.status !== 'live') return <span className="event-status final">{event.status[0].toUpperCase() + event.status.slice(1)}</span>;
+  const label = event.sport === 'soccer' ? event.minute ?? 'Live'
+    : event.sport === 'baseball' ? event.inning === undefined ? 'Live' : `${event.half === 'Top' ? 'Top' : 'Bot'} ${ordinal(event.inning)}`
+    : event.sport === 'football' ? event.clock ?? 'Live' : 'Live';
   return <span className="event-status live"><i/>{label}</span>;
 }
 
-function TeamRow({ participant, score, winning, possession }: { participant: Participant; score?: number; winning?: boolean; possession?: boolean }) {
+function TeamRow({ participant, score, winning, possession }: { participant: ScoreboardParticipant; score?: number; winning?: boolean; possession?: boolean }) {
   return <div className={`team-row ${winning ? 'winning' : ''}`}>
     <Mark {...participant} small/><span className="participant-name">{participant.name}</span>
     {possession && <span className="possession-dot" role="img" aria-label="In possession"/>}
@@ -35,20 +43,20 @@ function TeamRow({ participant, score, winning, possession }: { participant: Par
   </div>;
 }
 
-export function SoccerScore({ event }: { event: SoccerFixture }) {
+export function SoccerScore({ event }: { event: SoccerScoreboardEvent }) {
   return <>
     <div className="team-lines">{event.participants.map((participant, i) => {
       const scorers = event.goals.filter(goal => goal.side === i);
       return <div className="soccer-team-line" key={participant.short}>
         <TeamRow participant={participant} score={event.score?.[i]} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>
-        {event.status !== 'scheduled' && scorers.length > 0 && <div className="soccer-scorers">{scorers.map(goal => `${goal.player} ${goal.minute}`).join(', ')}</div>}
+        {event.status !== 'scheduled' && scorers.length > 0 && <div className="soccer-scorers">{scorers.map(goal => [goal.player, goal.minute].filter(Boolean).join(' ')).join(', ')}</div>}
       </div>;
     })}</div>
     {event.status === 'scheduled' && <div className="score-footnote">{event.venue}</div>}
   </>;
 }
 
-export function TennisScore({ event }: { event: TennisFixture }) {
+export function TennisScore({ event }: { event: TennisScoreboardEvent }) {
   const count = event.sets[0].length;
   return <div className="tennis-score">
     {count > 0 && <div className="tennis-columns" aria-hidden="true"><span/>{event.sets[0].map((_, i) => <span key={i}>{i + 1}</span>)}{event.points && <span>PTS</span>}</div>}
@@ -57,34 +65,34 @@ export function TennisScore({ event }: { event: TennisFixture }) {
       {event.sets[i].map((score, set) => <span key={set} aria-label={`Set ${set + 1}: ${score} games`} className={`set-score ${set === count - 1 && event.status === 'live' ? 'active-set' : ''} ${score > event.sets[1 - i][set] ? 'set-won' : ''}`}>{score}</span>)}
       {event.points && <strong className="point-score" aria-label={`${event.points[i]} points`}>{event.points[i]}</strong>}
     </div>)}
-    {event.status === 'live' && <div className="score-footnote"><span className="tennis-ball">●</span> Set {count} · {event.participants[event.server ?? 0].short} serving</div>}
+    {event.status === 'live' && <div className="score-footnote"><span className="tennis-ball">●</span> Set {count}{event.server === undefined ? '' : ` · ${event.participants[event.server].short} serving`}</div>}
     {event.status === 'scheduled' && <div className="score-footnote">{event.venue}</div>}
   </div>;
 }
 
-export function BaseDiamond({ bases }: { bases: [boolean, boolean, boolean] }) {
+export function BaseDiamond({ bases }: { bases: readonly [boolean, boolean, boolean] }) {
   return <span className="base-diamond" role="img" aria-label={`Runners: ${bases.map((occupied, i) => occupied ? ['first', 'second', 'third'][i] : null).filter(Boolean).join(' and ') || 'bases empty'}`}>
     <i className={`base second ${bases[1] ? 'occupied' : ''}`}/><i className={`base third ${bases[2] ? 'occupied' : ''}`}/><i className={`base first ${bases[0] ? 'occupied' : ''}`}/>
   </span>;
 }
 
-export function BaseballScore({ event }: { event: BaseballFixture }) {
+export function BaseballScore({ event }: { event: BaseballScoreboardEvent }) {
   return <>
     <div className="baseball-score"><div className="team-lines">{event.participants.map((participant, i) => <TeamRow key={participant.short} participant={participant} score={event.score?.[i]} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>)}</div>
-      {event.status === 'live' && event.bases && <div className="diamond-wrap"><BaseDiamond bases={event.bases}/><span className="outs" aria-label={outsLabel(event.outs ?? 0)}>{[0, 1, 2].map(i => <i key={i} className={i < (event.outs ?? 0) ? 'filled' : ''}/>)}</span></div>}
+      {event.status === 'live' && event.bases && <div className="diamond-wrap"><BaseDiamond bases={event.bases}/>{event.outs !== undefined && <span className="outs" aria-label={outsLabel(event.outs)}>{[0, 1, 2].map(i => <i key={i} className={i < event.outs! ? 'filled' : ''}/>)}</span>}</div>}
     </div>
-    <div className="score-footnote">{event.status === 'live' ? <><strong>{event.batter}</strong> batting · {event.count} count · {outsLabel(event.outs ?? 0)}</> : event.status === 'final' ? event.decision : `${event.pitchers[0].split(' ').at(-1)} vs ${event.pitchers[1].split(' ').at(-1)}`}</div>
+    <div className="score-footnote">{event.status === 'live' ? <>{event.batter && <><strong>{event.batter}</strong> batting</>}{event.batter && (event.count || event.outs !== undefined) ? ' · ' : ''}{event.count ? `${event.count} count` : ''}{event.count && event.outs !== undefined ? ' · ' : ''}{event.outs !== undefined ? outsLabel(event.outs) : ''}</> : event.status === 'final' ? event.decision : event.pitchers ? `${event.pitchers[0].split(' ').at(-1)} vs ${event.pitchers[1].split(' ').at(-1)}` : 'Pitchers TBD'}</div>
   </>;
 }
 
-export function FootballScore({ event }: { event: FootballFixture }) {
+export function FootballScore({ event }: { event: FootballScoreboardEvent }) {
   return <>
     <div className="team-lines">{event.participants.map((participant, i) => <TeamRow key={participant.short} participant={participant} score={event.score?.[i]} possession={event.status === 'live' && event.possession === i} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>)}</div>
-    <div className="score-footnote">{event.status === 'live' ? <>{event.participants[event.possession ?? 0].short} ball · <strong>{event.situation}</strong></> : event.status === 'scheduled' ? event.venue : 'Week 1'}</div>
+    <div className="score-footnote">{event.status === 'live' ? <>{event.possession === undefined ? 'Possession unavailable' : `${event.participants[event.possession].short} ball`}{event.situation && <> · <strong>{event.situation}</strong></>}</> : event.status === 'scheduled' ? event.venue : 'Week 1'}</div>
   </>;
 }
 
-export function SportScore({ event }: { event: Fixture }) {
+export function SportScore({ event }: { event: ScoreboardEvent }) {
   switch (event.sport) {
     case 'soccer': return <SoccerScore event={event}/>;
     case 'tennis': return <TennisScore event={event}/>;
@@ -93,7 +101,7 @@ export function SportScore({ event }: { event: Fixture }) {
   }
 }
 
-export function ScoreCard({ event, timeZone, from }: { event: Fixture; timeZone: string; from: string }) {
+export function ScoreCard({ event, timeZone, from }: { event: ScoreboardEvent; timeZone: string; from: string }) {
   return <a className={`score-card ${event.sport}`} href={eventHref(event.id, from)}>
     <div className="card-meta"><span>{event.sport === 'tennis' ? `${event.category}’s singles · ${event.round}` : event.competition}</span><Status event={event} timeZone={timeZone}/></div>
     <SportScore event={event}/>

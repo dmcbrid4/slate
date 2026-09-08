@@ -1,6 +1,6 @@
 # Slate canonical domain model
 
-Status: Phase 1 architecture decision. Canonical primitives, invariants, seed data, and the scoreboard projector are implemented through task #23.
+Status: Phase 1 architecture decision. Canonical primitives, invariants, seed data, scoreboard projection, and derived relevance are implemented through task #24.
 
 ## Purpose
 
@@ -225,7 +225,7 @@ Events do not contain follow IDs. A relevance service derives matches from the c
 4. Collection follows expand through explicit CollectionMembers.
 5. Results deduplicate by canonical Event ID and retain every matching follow as provenance.
 
-The scoreboard read model returns provenance separately from the event, for example `matchedBy` and `primaryMatch`. Direct participant matches rank ahead of broad competition/group/collection matches. This preserves the current For You behavior without storing user-specific data on an Event.
+The scoreboard selection result returns relevance separately from the event as ordered `matches` plus `primaryMatch`. Direct participant matches rank ahead of broad competition/group/collection matches. Stable prototype destination IDs resolve to typed canonical targets at the data boundary, so routes do not need to expose canonical identity choices. This preserves the current For You behavior without storing user-specific data on an Event.
 
 ## Read-model boundary
 

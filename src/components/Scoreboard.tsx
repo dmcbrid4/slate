@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { entities, entityById } from '@/data/entities';
-import { DEMO_NOW, fixtures } from '@/data/fixtures';
-import type { Day, Fixture } from '@/data/types';
-import { days, formatDay, formatFullDay, isPersonal, selectEvents, selectedDate, swipeDestination, timezoneLabel } from '@/lib/scores';
+import { DEMO_NOW, eventMatchesFollowDestination, isPersonal, selectScoreboardEvents, type RelevantScoreboardEvent } from '@/data/scoreboard';
+import type { Day } from '@/data/types';
+import { days, formatDay, formatFullDay, selectedDate, swipeDestination, timezoneLabel } from '@/lib/scores';
 import { Icon } from './Icon';
 import { Mark, ScoreCard } from './ScoreCard';
 
@@ -20,7 +20,7 @@ export function DateNav({ day, destination, timeZone }: { day: Day; destination:
   })}</nav>;
 }
 
-function EventGroup({ title, subtitle, events, timeZone, from, tournament = false }: { title: string; subtitle?: string; events: Fixture[]; timeZone: string; from: string; tournament?: boolean }) {
+function EventGroup({ title, subtitle, events, timeZone, from, tournament = false }: { title: string; subtitle?: string; events: readonly RelevantScoreboardEvent[]; timeZone: string; from: string; tournament?: boolean }) {
   if (!events.length) return null;
   return <section className="event-group">
     <div className="section-heading"><h2>{title}{subtitle && <span>{subtitle}</span>}</h2>{tournament && <a href={`#/scores/us-open/${from.split('/').at(-1)}`} className="quiet-link">Tournament <Icon name="chevron" size={14}/></a>}</div>
@@ -32,15 +32,15 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
   const [category, setCategory] = useState('All');
   const touch = useRef<{ x: number; y: number } | null>(null);
   const from = `/scores/${destination}/${day}`;
-  const events = selectEvents(fixtures, destination, following, day, timeZone, DEMO_NOW);
-  const personal = events.filter(event => isPersonal(event, following));
-  const rest = events.filter(event => !isPersonal(event, following));
+  const events = selectScoreboardEvents(destination, following, day, timeZone, DEMO_NOW);
+  const personal = events.filter(isPersonal);
+  const rest = events.filter(event => !isPersonal(event));
   const usedRest = new Set<string>();
   const broadGroups = following
     .map(id => entityById[id])
     .filter(candidate => candidate && candidate.kind !== 'Team' && candidate.kind !== 'Player')
     .map(broad => {
-      const groupEvents = rest.filter(event => !usedRest.has(event.id) && event.follows.includes(broad.id));
+      const groupEvents = rest.filter(event => !usedRest.has(event.id) && eventMatchesFollowDestination(event, broad.id));
       groupEvents.forEach(event => usedRest.add(event.id));
       return { broad, groupEvents };
     })

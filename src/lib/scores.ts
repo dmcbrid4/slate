@@ -1,5 +1,4 @@
-import { entityById } from '../data/entities.ts';
-import type { Day, Fixture } from '../data/types.ts';
+import type { Day } from '../data/types.ts';
 
 export const days: Day[] = ['yesterday', 'today', 'tomorrow'];
 
@@ -29,30 +28,6 @@ export function formatTime(instant: string, timeZone: string): string {
 
 export function timezoneLabel(timeZone: string, now: string): string {
   return new Intl.DateTimeFormat('en-US', { timeZone, timeZoneName: 'short' }).formatToParts(new Date(now)).find(part => part.type === 'timeZoneName')?.value ?? timeZone;
-}
-
-export function isPersonal(event: Fixture, following: string[]): boolean {
-  return event.follows.some(id => following.includes(id) && ['Team', 'Player'].includes(entityById[id]?.kind));
-}
-
-export function selectEvents(events: Fixture[], destination: string, following: string[], day: Day, timeZone: string, now: string): Fixture[] {
-  const target = selectedDate(now, day, timeZone);
-  const seen = new Set<string>();
-  return events.filter(event => {
-    if (seen.has(event.id) || dateKey(event.start, timeZone) !== target) return false;
-    const relevant = destination === 'for-you'
-      ? event.follows.some(id => following.includes(id))
-      : event.follows.includes(destination);
-    if (relevant) seen.add(event.id);
-    return relevant;
-  }).sort((a, b) => {
-    if (destination === 'for-you') {
-      const personal = Number(isPersonal(b, following)) - Number(isPersonal(a, following));
-      if (personal) return personal;
-    }
-    const order = { live: 0, scheduled: 1, final: 2 };
-    return order[a.status] - order[b.status] || a.start.localeCompare(b.start);
-  });
 }
 
 export function reorderFollowing(following: string[], id: string, direction: -1 | 1): string[] {
