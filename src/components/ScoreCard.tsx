@@ -30,7 +30,7 @@ export function Status({ event, timeZone }: { event: Fixture; timeZone: string }
 function TeamRow({ participant, score, winning, possession }: { participant: Participant; score?: number; winning?: boolean; possession?: boolean }) {
   return <div className={`team-row ${winning ? 'winning' : ''}`}>
     <Mark {...participant} small/><span className="participant-name">{participant.name}</span>
-    {possession && <span className="possession-dot" aria-label="In possession"/>}
+    {possession && <span className="possession-dot" role="img" aria-label="In possession"/>}
     {score !== undefined && <strong className="team-score">{score}</strong>}
   </div>;
 }
@@ -53,7 +53,7 @@ export function TennisScore({ event }: { event: TennisFixture }) {
   return <div className="tennis-score">
     {count > 0 && <div className="tennis-columns" aria-hidden="true"><span/>{event.sets[0].map((_, i) => <span key={i}>{i + 1}</span>)}{event.points && <span>PTS</span>}</div>}
     {event.participants.map((participant, i) => <div className="tennis-player" key={participant.short}>
-      <span className="tennis-name"><Mark {...participant} small/><span className="participant-name">{participant.name}<small>{participant.seed}</small></span>{event.server === i && event.status === 'live' && <span className="serve-dot" aria-label={`${participant.name} serving`}/>}</span>
+      <span className="tennis-name"><Mark {...participant} small/><span className="participant-name">{participant.name}<small>{participant.seed}</small></span>{event.server === i && event.status === 'live' && <span className="serve-dot" role="img" aria-label={`${participant.name} serving`}/>}</span>
       {event.sets[i].map((score, set) => <span key={set} aria-label={`Set ${set + 1}: ${score} games`} className={`set-score ${set === count - 1 && event.status === 'live' ? 'active-set' : ''} ${score > event.sets[1 - i][set] ? 'set-won' : ''}`}>{score}</span>)}
       {event.points && <strong className="point-score" aria-label={`${event.points[i]} points`}>{event.points[i]}</strong>}
     </div>)}
