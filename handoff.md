@@ -57,3 +57,15 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 Give Claude one numbered item or one narrowly bounded subtask at a time. Include the exact files, expected behavior, and an explicit instruction not to expand scope. Claude should commit its work. Codex reviews the diff, runs validation, and decides whether the task is complete before moving on.
 
 The next task is **#4 Core navigation polish**. Codex should define the behavior and acceptance criteria first, then delegate only the implementation portion to Claude.
+
+## Task 4 acceptance criteria
+
+- The followed rail and full-page swipe gesture use the same order: For You, then the user's ordered follows.
+- Changing followed destination preserves Yesterday, Today, or Tomorrow. Dates change only through explicit date controls.
+- Each destination, date, primary-navigation, and event-detail change creates a normal browser-history entry, so browser Back and Forward work predictably.
+- Returning to Scores from Search, Following, or an event detail restores the last scoreboard destination and selected day.
+- Each route restores its own scroll position. A route change moves focus to the new main view without causing an unrelated vertical jump.
+- The active followed destination remains visibly selected and scrolls into view horizontally without moving the document.
+- The mobile bottom navigation clearly identifies the current section, respects safe areas, and never covers the end of the page.
+- A single-touch, horizontally dominant gesture changes followed destination. Taps, vertical scrolling, multi-touch gestures, and swipes past either end do nothing.
+- Keyboard focus styles and accessible current-page labels remain intact throughout navigation.
