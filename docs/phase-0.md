@@ -46,6 +46,8 @@ At a 390 × 844 mobile viewport, Slate reaches followed destinations, Yesterday 
 
 The review found no missing core flow. The final Phase 0 correction pass should only reassess swipe discoverability, first-viewport density at 320px and 390px, and whether placeholder monograms materially impede recognition. Production data trust, freshness, and coverage remain outside Phase 0.
 
-## Next small iteration
+## Final validation
 
-Run the bounded final-corrections pass from the comparison review, then complete final validation and handoff. Stay in Phase 0 until this core loop feels convincing.
+The bounded corrections review and final validation are complete. Typecheck, ESLint, the 12 deterministic tests, and the production build pass. Browser QA covered For You, ATP/WTA, the combined US Open route, live tennis detail, Search, Following management, and explicit date destinations. The repository remains local-only Phase 0 work; Phase 1 has not started.
+
+The next product decision is whether to begin a separately requested Phase 1. Until then, evaluate the existing prototype on a phone using the checklist above.

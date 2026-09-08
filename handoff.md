@@ -41,7 +41,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 18. [x] Yahoo comparison review — Codex, GPT-5.6 Sol / high reasoning
 19. [x] Final corrections — Codex, GPT-5.6 Sol / high reasoning
     - Delegate only isolated CSS or copy corrections.
-20. [ ] Final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
+20. [x] Final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
     - Run typecheck, lint, tests, build, browser QA, scope review, commit, push, and update the documentation.
 
 ## Tasks 6–17 summary
@@ -151,7 +151,7 @@ The local app runs at `http://localhost:3000`. The repository is already configu
 
 Give Claude one numbered item or one narrowly bounded subtask at a time. Include the exact files, expected behavior, and an explicit instruction not to expand scope. Claude should commit its work. Codex reviews the diff, runs validation, and decides whether the task is complete before moving on.
 
-The **#6–#10 Claude-first tranche** (MLB, NFL, existing degraded/empty states, responsive CSS, and PWA metadata) is implemented, committed, pushed, and accepted after Codex review and validation. The broader #11–#17 work is also implemented, committed, pushed, and accepted after Codex review. The Yahoo comparison in #18 is complete. The next task is **#19 Final corrections**.
+The **#6–#10 Claude-first tranche** (MLB, NFL, existing degraded/empty states, responsive CSS, and PWA metadata) is implemented, committed, pushed, and accepted after Codex review and validation. The broader #11–#17 work is also implemented, committed, pushed, and accepted after Codex review. The Yahoo comparison in #18, final corrections in #19, and final validation in #20 are complete.
 
 ## Task 18 Yahoo comparison findings
 
@@ -180,7 +180,11 @@ The comparison does not establish production trust, freshness, or coverage becau
 
 The narrow-width follow-up at 320px and 390px did not reveal a correction worth changing in code. The rail remains independently scrollable, the active destination remains visible, the three date controls retain equal usable widths, and the first useful score content remains available without adding explanatory copy. Existing swipe behavior is covered by the deterministic gesture tests. Placeholder monograms remain an intentional Phase 0 tradeoff; sourcing official marks would expand the task without evidence that it improves this prototype enough to justify the asset work.
 
-No product-source files changed for #19. Typecheck, lint, tests, and the production build all pass. The remaining work is #20 final validation and handoff.
+No product-source files changed for #19. Typecheck, lint, tests, and the production build all pass. #20 then completed the final validation and handoff.
+
+## Task 20 final validation and handoff
+
+The final validation pass confirmed the Phase 0 surface against the brief and the implemented routes. `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` all pass. The browser pass verified For You, ATP/WTA, the combined US Open route, a live tennis event detail page, Search, Following management, and explicit date destinations. The working tree is clean, `main` is pushed to `origin/main`, and no Phase 1 work was started.
 
 ## Task 4 acceptance criteria
 
