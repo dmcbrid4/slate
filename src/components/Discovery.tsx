@@ -17,6 +17,31 @@ export function Search({ following, onToggle }: { following: string[]; onToggle:
   </>;
 }
 
+// Moving or removing a row can disable/unmount the button that triggered it, which drops
+// focus to <body>. Redirect focus to a sensible surviving control instead.
+function focusAfterRowAction(list: HTMLElement, row: HTMLElement | null, rowIndex: number) {
+  const active = document.activeElement;
+  const healthy = active && active !== document.body && document.body.contains(active) && !(active instanceof HTMLButtonElement && active.disabled);
+  if (healthy) return;
+  if (row && list.contains(row)) {
+    row.querySelector<HTMLElement>('button:not(:disabled)')?.focus();
+    return;
+  }
+  const rows = Array.from(list.querySelectorAll<HTMLElement>('.entity-row:not(.pinned-row)'));
+  const fallbackRow = rows[rowIndex] ?? rows[rowIndex - 1];
+  const focusable = fallbackRow?.querySelector<HTMLElement>('button:not(:disabled), a');
+  (focusable ?? document.querySelector<HTMLElement>('.add-follow-row'))?.focus();
+}
+
+function handleRowAction(event: { currentTarget: HTMLElement }, action: () => void) {
+  const row = event.currentTarget.closest<HTMLElement>('.entity-row');
+  const list = row?.closest<HTMLElement>('.entity-list') ?? null;
+  const rows = list ? Array.from(list.querySelectorAll<HTMLElement>('.entity-row:not(.pinned-row)')) : [];
+  const rowIndex = row ? rows.indexOf(row) : -1;
+  action();
+  if (list) requestAnimationFrame(() => focusAfterRowAction(list, row, rowIndex));
+}
+
 export function Following({ following, onToggle, onMove, onReset }: { following: string[]; onToggle: (id: string) => void; onMove: (id: string, direction: -1 | 1) => void; onReset: () => void }) {
   return <>
     <div className="page-heading"><div><p className="eyebrow">Your scoreboard, in your order</p><h1>Following <span className="heading-count">{following.length}</span></h1></div><a className="icon-button" href="#/search" aria-label="Add a follow"><Icon name="plus"/></a></div>
@@ -24,7 +49,7 @@ export function Following({ following, onToggle, onMove, onReset }: { following:
     <div className="entity-list following-list"><div className="entity-row pinned-row"><span className="entity-mark neutral"><Icon name="scores"/></span><div className="entity-info"><strong>For You</strong><span>Everything you follow, without duplicates.</span></div><span className="pinned-label">Pinned</span></div>
       {following.map((id, index) => {
         const entity = entityById[id];
-        return <div className="entity-row" key={id}><Mark {...entity}/><a className="entity-info" href={`#/scores/${id}/today`}><strong>{entity.shortName}</strong><span>{entity.kind} · {entity.subtitle.split(' · ')[0]}</span></a><div className="reorder-controls"><button className="icon-button" disabled={index === 0} aria-label={`Move ${entity.shortName} up`} onClick={() => onMove(id, -1)}><Icon name="up" size={18}/></button><button className="icon-button" disabled={index === following.length - 1} aria-label={`Move ${entity.shortName} down`} onClick={() => onMove(id, 1)}><Icon name="down" size={18}/></button><button className="icon-button remove-follow" aria-label={`Unfollow ${entity.name}`} onClick={() => onToggle(id)}><Icon name="close" size={17}/></button></div></div>;
+        return <div className="entity-row" key={id}><Mark {...entity}/><a className="entity-info" href={`#/scores/${id}/today`}><strong>{entity.shortName}</strong><span>{entity.kind} · {entity.subtitle.split(' · ')[0]}</span></a><div className="reorder-controls"><button className="icon-button" disabled={index === 0} aria-label={`Move ${entity.shortName} up`} onClick={event => handleRowAction(event, () => onMove(id, -1))}><Icon name="up" size={18}/></button><button className="icon-button" disabled={index === following.length - 1} aria-label={`Move ${entity.shortName} down`} onClick={event => handleRowAction(event, () => onMove(id, 1))}><Icon name="down" size={18}/></button><button className="icon-button remove-follow" aria-label={`Unfollow ${entity.name}`} onClick={event => handleRowAction(event, () => onToggle(id))}><Icon name="close" size={17}/></button></div></div>;
       })}
     </div>
     {!following.length && <p className="intro-text">No follows yet. Add your first team, tour, or competition below.</p>}
