@@ -140,7 +140,8 @@
   .tennis-name small { font-size: .75rem; color: var(--muted); margin-left: 4px; vertical-align: top; font-weight: 450; }
   .tennis-name .entity-mark { font-size: .625rem; width: 23px; height: 20px; border-radius: 4px; }
   .set-score { width: 25px; text-align: center; font-variant-numeric: tabular-nums; font-size: 1rem; color: var(--muted); }
-  .set-won, .active-set { color: var(--strong); font-weight: 600; }
+  .active-set { color: var(--text); font-weight: 500; }
+  .set-won { color: var(--strong); font-weight: 600; }
   .point-score { width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; border-radius: 4px; color: var(--point-ink); background: var(--point); font-size: .9375rem; font-weight: 650; font-variant-numeric: tabular-nums; }
   .serve-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--point-ink); flex-shrink: 0; }
   .tennis-ball { color: var(--point-ink); font-size: .7rem; margin-right: 4px; }
