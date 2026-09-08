@@ -26,9 +26,9 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - Limit this to the existing manifest, icons, install metadata, and basic shell. Do not add service workers or offline data.
 11. [x] For You refinement — Codex, GPT-5.6 Sol / high reasoning
     - Codex decides ranking, grouping, context placement, and information density; Claude may implement the approved result.
-12. [ ] Soccer presentation — Codex, GPT-5.6 Sol / medium reasoning
+12. [x] Soccer presentation — Codex, GPT-5.6 Sol / medium reasoning
     - Codex defines the information hierarchy; Claude may implement approved soccer card markup and styling.
-13. [ ] Tennis scoring — Codex, GPT-5.6 Sol / high reasoning
+13. [x] Tennis scoring — Codex, GPT-5.6 Sol / high reasoning
     - Codex defines the live score hierarchy; Claude may add approved fixtures and presentation details.
 14. [ ] Unified US Open experience — Codex, GPT-5.6 Sol / high reasoning
     - Codex defines the tournament experience; Claude may implement approved labels, fixtures, filters, and responsive styling.
@@ -44,7 +44,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 20. [ ] Final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
     - Run typecheck, lint, tests, build, browser QA, scope review, commit, push, and update the documentation.
 
-## Tasks 6–11 summary
+## Tasks 6–13 summary
 
 Implemented and committed on `main` (not pushed).
 
@@ -56,6 +56,8 @@ Starting with #11, the user authorized Claude to make the product-judgment calls
 9. Responsive visual polish (`app/globals.css`) — fixed the desktop (≥700px) two-column event grid leaving a dangling empty half-row whenever a group had an odd card count (e.g. 3 followed events, 3 matches on one tennis court). Surveyed 320px/390px/430px/desktop across For You, US Open, Search, Following, and an event detail page; this was the only real issue found.
 10. PWA polish (`app/layout.tsx`) — `app/icon.svg` was building and serving at `/icon.svg` but no `<link rel="icon">` ever referenced it in `<head>`, in both dev and production builds; only the 32×32 `favicon.ico` was wired up. Declared the SVG icon explicitly via `metadata.icons` so browsers that support SVG favicons get the vector version alongside the existing raster fallback. Considered switching the iOS status-bar style to `black-translucent` to match the header's existing safe-area padding, but that forces white status-bar text unconditionally, which would be illegible against the light theme's white header — left as `default`.
 11. For You refinement (`src/components/Scoreboard.tsx`, judgment call) — the Following page promises "your scoreboard, in your order," and the follow rail/swipe order already honor that, but For You's broad (non-personal) sections were hardcoded as tennis, then NFL, then a Premier League overflow, regardless of the user's actual follow order. Sections are now built by walking `following` and grouping each broad (Competition/Tournament/Collection) entity's events in that order, so reordering follows on the Following page now reorders For You's sections too. Visual treatment per section (US Open's tournament link, football's "Week 1", soccer's collapsed overflow) is unchanged — only ordering changed. Also removed the dead "MLB" section: there's no broad MLB follow entity in the fixture data, only team-level follows, so it never rendered anything.
+12. Soccer presentation (`src/components/ScoreCard.tsx`) — goal scorers only rendered while a match was live; once final, that information vanished from the card entirely (confirmed on Chelsea 1-1 Brighton, which has no context sentence — the card showed just a bare score with no story). The event detail page already lists goals for both live and final. Scorers now show for both; scheduled is unaffected.
+13. Tennis scoring (`app/globals.css`, judgment call) — `.set-won` and `.active-set` shared one CSS rule, so both players' score in the in-progress set rendered with identical bold weight regardless of who was actually ahead (e.g. Sinner leading 4-3 looked the same as Alcaraz trailing). Completed sets already distinguished winner from loser correctly. Split the rule so the active set gets a lighter default weight and the true leader (active or completed) gets the same bold treatment as a confirmed set win — matching how FotMob/Apple Sports (the product's own stated references) show an in-progress leader.
 
 ## Claude project context
 
