@@ -1,8 +1,8 @@
-# Slate Phase 0 Handoff
+# Slate Handoff
 
-This document records the remaining Phase 0 work, recommended model routing, and the division of labor between Codex and Claude.
+This document records completed Phase 0 work, the Phase 1 implementation sequence, recommended model routing, and the division of labor between Codex and Claude.
 
-Codex owns product decisions, interaction architecture, cross-screen changes, and final review. Claude handles narrowly scoped implementation work after the intended behavior is specified. Every delegated task must stay within the Slate brief and Phase 0 scope.
+Codex owns product decisions, interaction architecture, cross-screen changes, and final review. Claude handles narrowly scoped implementation work after the intended behavior is specified. Every delegated task must stay within the Slate brief and the current phase boundary.
 
 ## Checklist
 
@@ -44,6 +44,24 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 20. [x] Final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
     - Run typecheck, lint, tests, build, browser QA, scope review, commit, push, and update the documentation.
 
+### Phase 1 — canonical domain model
+
+21. [x] Architecture and domain shape — Codex, GPT-6 Astra / high reasoning
+    - Decisions are recorded in `docs/domain-model.md`, `docs/providers.md`, and `docs/phase-1.md`. Stop here before implementation.
+22. [ ] Canonical domain primitives and invariants — Codex, GPT-5.6 Sol / high reasoning
+23. [ ] Canonical mock seed and scoreboard read-model projector — Codex, GPT-5.6 Sol / high reasoning
+24. [ ] Follow targeting, relevance provenance, and deduplication — Codex, GPT-5.6 Sol / high reasoning
+25. [ ] Provider contracts and mock normalizer — Codex, GPT-5.6 Sol / high reasoning
+26. [ ] Normalization test matrix — Claude, GPT-5.6 Terra / medium reasoning
+    - Implement only the cases specified in `docs/providers.md` and `docs/phase-1.md`; do not invent provider behavior.
+27. [ ] Drizzle/PostgreSQL schema and initial migration — Codex, GPT-5.6 Sol / high reasoning
+    - Claude may perform a fully specified mechanical migration step using GPT-5.6 Terra / medium reasoning.
+28. [ ] Repository and server read boundary — Codex, GPT-5.6 Sol / high reasoning
+29. [ ] Phase 1 architecture audit — Codex, GPT-6 Astra / high reasoning if allowance permits; otherwise GPT-5.6 Sol / high reasoning
+30. [ ] Phase 1 validation and handoff — Codex, GPT-5.6 Sol / high reasoning
+
+Phase 1 implementation must preserve the Phase 0 UX and must not include a real sports provider, auth, polling, queues, Redis, workers, SSE, WebSockets, or Phase 2 tennis integration.
+
 ## Tasks 6–17 summary
 
 Implemented, committed, and pushed on `main`.
@@ -69,9 +87,13 @@ Slate is a mobile-first personal sports scoreboard. Its primary job is to let so
 
 The product should feel like a focused utility: FotMob's information density, Apple Sports' restraint, and Linear's polish. It should feel cleaner and faster than Yahoo Sports for checking scores. Keep the interface quiet, direct, and score-first. Do not add media feeds, ads, betting, fantasy, news, social features, or generic sports-app chrome.
 
-### Current Phase 0 boundary
+### Completed Phase 0 boundary
 
-This is a locally runnable prototype using realistic deterministic mock data. Phase 0 exists to evaluate the product interaction and visual system. Do not add real sports APIs, authentication, live-score infrastructure, WebSockets, queues, workers, Redis, provider SDKs, or production data modeling. Do not begin Phase 1.
+The locally runnable prototype uses realistic deterministic mock data to evaluate the product interaction and visual system. Phase 0 is complete.
+
+### Current Phase 1 boundary
+
+Phase 1 replaces the temporary fixture structure with the canonical domain, provider boundary, normalization tests, and a minimal PostgreSQL/Drizzle persistence shape described in `docs/phase-1.md`. Do not add real sports APIs, authentication, live-score infrastructure, WebSockets, queues, workers, Redis, or Phase 2 tennis integration.
 
 The supported sports are men's soccer, unified ATP/WTA tennis, MLB, and NFL. The primary followed destinations are For You, ATP/WTA, Tottenham, Red Sox, Diamondbacks, Premier League, and NFL. A combined US Open experience is part of the prototype. Do not introduce separate top-level men's and women's tennis destinations.
 
