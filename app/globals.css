@@ -275,10 +275,10 @@
     .date-nav a time { font-size: .75rem; }
     .day-meta { margin-bottom: 28px; }
     .event-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 12px; }
-    .event-grid > .score-card:only-child { grid-column: 1 / -1; }
-    .event-grid > .score-card:only-child .team-score { margin-left: 0; }
-    .event-grid > .score-card:only-child .participant-name { flex: 1; }
-    .event-grid > .score-card:only-child .baseball-score { gap: 30px; }
+    .event-grid > .score-card:nth-child(odd):last-child { grid-column: 1 / -1; }
+    .event-grid > .score-card:nth-child(odd):last-child .team-score { margin-left: 0; }
+    .event-grid > .score-card:nth-child(odd):last-child .participant-name { flex: 1; }
+    .event-grid > .score-card:nth-child(odd):last-child .baseball-score { gap: 30px; }
     .card-meta { margin-bottom: 13px; }
     .score-card { padding: 16px 17px 15px; }
     .context { margin: 13px -17px -15px; padding: 10px 16px; }
