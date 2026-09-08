@@ -1,16 +1,15 @@
 'use client';
 
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useMemo, useState, useSyncExternalStore, type MouseEvent as ReactMouseEvent } from 'react';
 import { defaultFollowing, entityById } from '@/data/entities';
-import type { Day } from '@/data/types';
+import { DEFAULT_SCORE_ROUTE, parseScoreRoute } from '@/lib/navigation';
 import { parsePreferences, STORAGE_KEY, type Preferences } from '@/lib/preferences';
-import { days, reorderFollowing } from '@/lib/scores';
+import { reorderFollowing } from '@/lib/scores';
 import { Search, Following } from './Discovery';
 import { EventDetail } from './EventDetail';
 import { BrandMark, Icon, type IconName } from './Icon';
 import { FollowRail, Scoreboard } from './Scoreboard';
 
-const defaultRoute = '/scores/for-you/today';
 let memoryPreferences: string | null = null;
 function readPreferences() {
   try { return memoryPreferences ?? window.localStorage.getItem(STORAGE_KEY); } catch { return memoryPreferences; }
@@ -25,10 +24,12 @@ function subscribePreferences(callback: () => void) {
 }
 const scrollPositions = new Map<string, number>();
 function subscribeRoute(callback: () => void) {
-  let previous = window.location.hash.slice(1) || defaultRoute;
+  let previous = window.location.hash.slice(1) || DEFAULT_SCORE_ROUTE;
+  const previousScrollRestoration = window.history.scrollRestoration;
+  window.history.scrollRestoration = 'manual';
   const onRoute = () => {
     scrollPositions.set(previous, window.scrollY);
-    previous = window.location.hash.slice(1) || defaultRoute;
+    previous = window.location.hash.slice(1) || DEFAULT_SCORE_ROUTE;
     callback();
     window.requestAnimationFrame(() => {
       document.getElementById('main-content')?.focus({ preventScroll: true });
@@ -36,7 +37,10 @@ function subscribeRoute(callback: () => void) {
     });
   };
   window.addEventListener('hashchange', onRoute);
-  return () => window.removeEventListener('hashchange', onRoute);
+  return () => {
+    window.removeEventListener('hashchange', onRoute);
+    window.history.scrollRestoration = previousScrollRestoration;
+  };
 }
 const noopSubscribe = () => () => {};
 const nav: { id: string; label: string; icon: IconName }[] = [
@@ -46,20 +50,21 @@ const nav: { id: string; label: string; icon: IconName }[] = [
 ];
 
 export function SlateApp() {
-  const route = useSyncExternalStore(subscribeRoute, () => window.location.hash.slice(1) || defaultRoute, () => defaultRoute);
+  const route = useSyncExternalStore(subscribeRoute, () => window.location.hash.slice(1) || DEFAULT_SCORE_ROUTE, () => DEFAULT_SCORE_ROUTE);
   const raw = useSyncExternalStore(subscribePreferences, readPreferences, () => null);
   const preferences = useMemo(() => parsePreferences(raw), [raw]);
   const timeZone = useSyncExternalStore(noopSubscribe, () => Intl.DateTimeFormat().resolvedOptions().timeZone, () => 'America/New_York');
   const [notice, setNotice] = useState('');
   const [storageWarning, setStorageWarning] = useState(false);
-  const [lastScores, setLastScores] = useState(defaultRoute);
+  const [lastScores, setLastScores] = useState(DEFAULT_SCORE_ROUTE);
   const [path, query] = route.split('?');
-  const [, view = 'scores', id = 'for-you', requestedDay = 'today'] = path.split('/');
-  const day: Day = days.includes(requestedDay as Day) ? requestedDay as Day : 'today';
-  const destination = id === 'for-you' || Object.hasOwn(entityById, id) ? id : 'for-you';
+  const [, requestedView = 'scores', id = 'for-you'] = path.split('/');
+  const view = ['scores', 'search', 'following', 'event'].includes(requestedView) ? requestedView : 'scores';
+  const scoreRoute = parseScoreRoute(view === 'scores' ? path : undefined) ?? parseScoreRoute(DEFAULT_SCORE_ROUTE)!;
+  const { day, destination } = scoreRoute;
   const activeNav = view === 'event' ? 'scores' : view;
   const fromQuery = new URLSearchParams(query).get('from');
-  const from = fromQuery?.startsWith('/scores/') ? fromQuery : lastScores;
+  const from = parseScoreRoute(fromQuery)?.path ?? lastScores;
 
   const save = (next: Preferences) => {
     memoryPreferences = JSON.stringify(next);
@@ -80,10 +85,15 @@ export function SlateApp() {
     const dark = preferences.theme === 'dark' || (preferences.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     save({ ...preferences, theme: dark ? 'light' : 'dark' });
   };
-  const currentScores = view === 'scores' ? path : view === 'event' ? from : lastScores;
+  const currentScores = view === 'scores' ? scoreRoute.path : view === 'event' ? from : lastScores;
+  const rememberScoreTarget = (event: ReactMouseEvent<HTMLDivElement>) => {
+    const href = (event.target as Element).closest('a')?.getAttribute('href');
+    const target = parseScoreRoute(href?.startsWith('#') ? href.slice(1) : href);
+    if (target) setLastScores(target.path);
+  };
   const navItems = nav.map(item => <a href={`#${item.id === 'scores' ? currentScores : `/${item.id}`}`} onClick={() => setLastScores(currentScores)} key={item.id} className={activeNav === item.id ? 'active' : ''} aria-current={activeNav === item.id ? 'page' : undefined}><Icon name={item.icon} size={21}/><span>{item.label}</span></a>);
 
-  return <div className="slate-app" data-theme={preferences.theme}>
+  return <div className="slate-app" data-theme={preferences.theme} onClickCapture={rememberScoreTarget}>
     <a className="skip-link" href="#main-content" onClick={event => { event.preventDefault(); document.getElementById('main-content')?.focus(); }}>Skip to content</a>
     <header className="app-header"><div className="header-inner"><a className="brand" href="#/scores/for-you/today" aria-label="Slate, For You scores"><BrandMark/><span>slate</span></a><nav className="desktop-nav" aria-label="Main navigation">{navItems}</nav><div className="header-actions"><span className="demo-badge">Mock data</span><button className="icon-button theme-toggle" aria-label="Toggle light and dark theme" onClick={toggleTheme}><span className="theme-sun"><Icon name="sun"/></span><span className="theme-moon"><Icon name="moon"/></span></button></div></div></header>
     {view === 'scores' && <div className="rail-container"><FollowRail following={preferences.following} destination={destination} day={day}/></div>}

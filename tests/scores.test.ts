@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { defaultFollowing, entities } from '../src/data/entities.ts';
 import { DEMO_NOW, fixtures } from '../src/data/fixtures.ts';
+import { DEFAULT_SCORE_ROUTE, parseScoreRoute } from '../src/lib/navigation.ts';
 import { dateKey, isPersonal, reorderFollowing, selectEvents, selectedDate, swipeDestination } from '../src/lib/scores.ts';
 import { parsePreferences } from '../src/lib/preferences.ts';
 
@@ -80,6 +81,22 @@ test('page swipes follow the user’s order and ignore vertical movement, taps, 
   assert.equal(swipeDestination('for-you', follows, 100, 0), undefined);
   assert.equal(swipeDestination('tottenham', follows, -100, 0), undefined);
   assert.equal(swipeDestination('us-open', follows, -100, 0), undefined);
+});
+
+test('score routes preserve valid destinations and days while rejecting invalid history sources', () => {
+  assert.deepEqual(parseScoreRoute('/scores/tottenham/tomorrow'), {
+    destination: 'tottenham',
+    day: 'tomorrow',
+    path: '/scores/tottenham/tomorrow',
+  });
+  assert.equal(parseScoreRoute('/scores/missing/today'), undefined);
+  assert.equal(parseScoreRoute('/scores/tottenham/next-week'), undefined);
+  assert.equal(parseScoreRoute('/search'), undefined);
+  assert.deepEqual(parseScoreRoute(DEFAULT_SCORE_ROUTE), {
+    destination: 'for-you',
+    day: 'today',
+    path: DEFAULT_SCORE_ROUTE,
+  });
 });
 
 test('stored preferences tolerate corruption and preserve intentional empty follows', () => {
