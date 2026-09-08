@@ -1,0 +1,82 @@
+import { useRef, useState } from 'react';
+import { entities, entityById } from '@/data/entities';
+import { DEMO_NOW, fixtures } from '@/data/fixtures';
+import type { Day, Fixture } from '@/data/types';
+import { days, formatDay, isPersonal, selectEvents, selectedDate, swipeDestination, timezoneLabel } from '@/lib/scores';
+import { Icon } from './Icon';
+import { Mark, ScoreCard } from './ScoreCard';
+
+export function DateNav({ day, destination, timeZone }: { day: Day; destination: string; timeZone: string }) {
+  return <nav className="date-nav" aria-label="Scoreboard date">{days.map(item => <a href={`#/scores/${destination}/${item}`} className={day === item ? 'selected' : ''} aria-current={day === item ? 'date' : undefined} key={item}>
+    <span>{item[0].toUpperCase() + item.slice(1)}</span><small>{formatDay(selectedDate(DEMO_NOW, item, timeZone)).split(', ')[1]}</small>
+  </a>)}</nav>;
+}
+
+function EventGroup({ title, subtitle, events, timeZone, from, tournament = false }: { title: string; subtitle?: string; events: Fixture[]; timeZone: string; from: string; tournament?: boolean }) {
+  if (!events.length) return null;
+  return <section className="event-group">
+    <div className="section-heading"><h2>{title}{subtitle && <span>{subtitle}</span>}</h2>{tournament && <a href={`#/scores/us-open/${from.split('/').at(-1)}`} className="quiet-link">Tournament <Icon name="chevron" size={14}/></a>}</div>
+    <div className="event-grid">{events.map(event => <ScoreCard key={event.id} event={event} timeZone={timeZone} from={from}/>)}</div>
+  </section>;
+}
+
+export function Scoreboard({ destination, day, following, timeZone, onToggleFollow }: { destination: string; day: Day; following: string[]; timeZone: string; onToggleFollow: (id: string) => void }) {
+  const [category, setCategory] = useState('All');
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const from = `/scores/${destination}/${day}`;
+  const events = selectEvents(fixtures, destination, following, day, timeZone, DEMO_NOW);
+  const personal = events.filter(event => isPersonal(event, following));
+  const rest = events.filter(event => !isPersonal(event, following));
+  const entity = entityById[destination];
+  const tennis = entity?.sport === 'tennis';
+  const tournament = destination === 'us-open';
+  const visible = events.filter(event => category === 'All' || event.sport !== 'tennis' || event.category === category);
+  const liveCount = events.filter(event => event.status === 'live').length;
+  const swipe = (endX: number, endY: number) => {
+    if (!touch.current) return false;
+    const dx = endX - touch.current.x;
+    const dy = endY - touch.current.y;
+    touch.current = null;
+    const next = swipeDestination(destination, following, dx, dy);
+    if (next) window.location.hash = `/scores/${next}/${day}`;
+    return Boolean(next);
+  };
+
+  return <>
+    <div className="page-heading"><div><p className="eyebrow">{formatDay(selectedDate(DEMO_NOW, day, timeZone), true)}</p><h1>{destination === 'for-you' ? 'For You' : entity?.name ?? 'Scores'}{tournament && <span className="title-detail">New York · Grand Slam</span>}</h1></div>
+      {entity && !following.includes(destination) ? <button className="follow-button" onClick={() => onToggleFollow(destination)}><Icon name="plus" size={16}/>Follow</button> : liveCount > 0 && <span className="live-count"><i/>{liveCount} live</span>}
+    </div>
+    <DateNav day={day} destination={destination} timeZone={timeZone}/>
+    <div className="day-meta"><span>{events.length} {events.length === 1 ? 'event' : 'events'}{destination === 'for-you' ? ' across your follows' : ''}</span><span>All times {timezoneLabel(timeZone, DEMO_NOW)}</span></div>
+    <div className="scoreboard-body" onTouchStart={event => { if (event.touches.length !== 1) { touch.current = null; return; } const first = event.touches[0]; touch.current = { x: first.clientX, y: first.clientY }; }} onTouchEnd={event => { const last = event.changedTouches[0]; if (swipe(last.clientX, last.clientY)) event.preventDefault(); }} onTouchCancel={() => { touch.current = null; }}>
+      {tennis && <>
+        {!tournament && <a href={`#/scores/us-open/${day}`} className="tournament-banner"><span className="tournament-mark"><Icon name="ball" size={29}/></span><span><strong>US Open</strong><small>New York · Grand Slam · Hard court</small></span><Icon name="chevron" size={18}/></a>}
+        <div className="tennis-filter"><div className="filter-options" role="group" aria-label="Tennis category">{['All', 'Men', 'Women'].map(item => <button key={item} onClick={() => setCategory(item)} aria-pressed={category === item} className={category === item ? 'active' : ''}>{item === 'All' ? 'All matches' : item}</button>)}</div><span className="secondary">Singles</span></div>
+      </>}
+      {!events.length ? <div className="empty-state"><Icon name="scores" size={32}/><h2>{following.length === 0 && destination === 'for-you' ? 'Your slate starts here' : `No events ${day}`}</h2><p>{following.length === 0 && destination === 'for-you' ? 'Follow a team, player, or competition to make this yours.' : `Nothing scheduled for ${entity?.shortName ?? 'your follows'} on this mock day.`}</p><a className="button-primary" href={following.length === 0 ? '#/search' : '#/scores/for-you/today'}>{following.length === 0 ? 'Find your follows' : 'Back to today’s For You'}<Icon name="arrow" size={16}/></a></div>
+      : destination === 'for-you' ? <>
+        <EventGroup title="Following closely" events={personal} timeZone={timeZone} from={from}/>
+        <EventGroup title="US Open" subtitle="ATP + WTA" events={rest.filter(event => event.sport === 'tennis')} timeZone={timeZone} from={from} tournament/>
+        <EventGroup title="NFL" subtitle="Week 1" events={rest.filter(event => event.sport === 'football')} timeZone={timeZone} from={from}/>
+        <EventGroup title="MLB" events={rest.filter(event => event.sport === 'baseball')} timeZone={timeZone} from={from}/>
+        {rest.some(event => event.sport === 'soccer') && <details className="league-overflow"><summary><span><Mark mark="PL" color="purple" small/>{rest.filter(event => event.sport === 'soccer').length} {personal.some(event => event.sport === 'soccer') ? 'other ' : ''}Premier League {rest.filter(event => event.sport === 'soccer').length === 1 ? 'match' : 'matches'}</span><Icon name="down" size={18}/></summary><div className="event-grid">{rest.filter(event => event.sport === 'soccer').map(event => <ScoreCard key={event.id} event={event} timeZone={timeZone} from={from}/>)}</div></details>}
+      </> : tournament ? <>
+        <div className="section-heading"><h2>Order of play</h2><span className="secondary">Men + Women</span></div>
+        {[...new Set(visible.map(event => event.venue))].map(court => <EventGroup key={court} title={court} events={visible.filter(event => event.venue === court).sort((a, b) => a.start.localeCompare(b.start))} timeZone={timeZone} from={from}/>)}
+      </> : <EventGroup title={tennis ? 'Matches' : entity?.kind === 'Team' ? 'Matches' : entity?.name ?? 'Events'} events={visible} timeZone={timeZone} from={from}/>}
+      {events.length > 0 && visible.length === 0 && <div className="empty-state"><h2>No {category.toLowerCase()}’s matches {day}</h2><button className="button-primary" onClick={() => setCategory('All')}>Show all matches</button></div>}
+      {events.length > 0 && <div className="endnote"><span className="endnote-line"/><span>You’re all caught up</span><span className="endnote-line"/></div>}
+    </div>
+  </>;
+}
+
+export function FollowRail({ following, destination, day }: { following: string[]; destination: string; day: Day }) {
+  const selectedRef = useRef<HTMLAnchorElement>(null);
+  // Keep the active destination visible when full-page swipes advance the rail.
+  const attachSelected = (node: HTMLAnchorElement | null) => {
+    selectedRef.current = node;
+    if (node) node.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  };
+  const destinations = [{ id: 'for-you', shortName: 'For You' }, ...following.map(id => entities.find(entity => entity.id === id)).filter(entity => entity !== undefined)];
+  return <nav className="follow-rail" aria-label="Followed scoreboards">{destinations.map(entity => <a key={entity.id} ref={destination === entity.id ? attachSelected : undefined} href={`#/scores/${entity.id}/${day}`} aria-current={destination === entity.id ? 'page' : undefined} className={destination === entity.id ? 'active' : ''}>{entity.shortName}</a>)}<a className="rail-add" href="#/search" aria-label="Find more to follow"><Icon name="plus" size={16}/></a></nav>;
+}

@@ -1,0 +1,85 @@
+import type { BaseballFixture, Fixture, FootballFixture, Participant, SoccerFixture, TennisFixture } from '@/data/types';
+import { eventHref, formatTime } from '@/lib/scores';
+import { Icon } from './Icon';
+
+export function Mark({ mark, color, small = false }: { mark: string; color: string; small?: boolean }) {
+  return <span className={`entity-mark ${color} ${small ? 'small' : ''}`} aria-hidden="true">{mark}</span>;
+}
+
+export function Status({ event, timeZone }: { event: Fixture; timeZone: string }) {
+  if (event.status === 'scheduled') return <span className="event-status">{formatTime(event.start, timeZone)}</span>;
+  if (event.status === 'final') return <span className="event-status final">Final</span>;
+  const label = event.sport === 'soccer' ? event.minute
+    : event.sport === 'baseball' ? `${event.half === 'Top' ? 'Top' : 'Bot'} ${event.inning}`
+    : event.sport === 'football' ? event.clock : 'Live';
+  return <span className="event-status live"><i/>{label}</span>;
+}
+
+function TeamRow({ participant, score, winning, possession }: { participant: Participant; score?: number; winning?: boolean; possession?: boolean }) {
+  return <div className={`team-row ${winning ? 'winning' : ''}`}>
+    <Mark {...participant} small/><span className="participant-name">{participant.name}</span>
+    {possession && <span className="possession-dot" aria-label="In possession"/>}
+    {score !== undefined && <strong className="team-score">{score}</strong>}
+  </div>;
+}
+
+export function SoccerScore({ event }: { event: SoccerFixture }) {
+  return <>
+    <div className="team-lines">{event.participants.map((participant, i) => <TeamRow key={participant.short} participant={participant} score={event.score?.[i]} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>)}</div>
+    {event.status === 'live' && <div className="score-footnote soccer-scorers">{event.goals.filter(goal => goal.side === 0).map(goal => `${goal.player} ${goal.minute}`).join(', ')}</div>}
+    {event.status === 'scheduled' && <div className="score-footnote">{event.venue}</div>}
+  </>;
+}
+
+export function TennisScore({ event }: { event: TennisFixture }) {
+  const count = event.sets[0].length;
+  return <div className="tennis-score">
+    {count > 0 && <div className="tennis-columns" aria-hidden="true"><span/>{event.sets[0].map((_, i) => <span key={i}>{i + 1}</span>)}{event.points && <span>PTS</span>}</div>}
+    {event.participants.map((participant, i) => <div className="tennis-player" key={participant.short}>
+      <span className="tennis-name"><Mark {...participant} small/><span className="participant-name">{participant.name}<small>{participant.seed}</small></span>{event.server === i && event.status === 'live' && <span className="serve-dot" aria-label={`${participant.name} serving`}/>}</span>
+      {event.sets[i].map((score, set) => <span key={set} aria-label={`Set ${set + 1}: ${score} games`} className={`set-score ${set === count - 1 && event.status === 'live' ? 'active-set' : ''} ${score > event.sets[1 - i][set] ? 'set-won' : ''}`}>{score}</span>)}
+      {event.points && <strong className="point-score" aria-label={`${event.points[i]} points`}>{event.points[i]}</strong>}
+    </div>)}
+    {event.status === 'live' && <div className="score-footnote"><span className="tennis-ball">●</span> Set {count} · {event.participants[event.server ?? 0].short} serving</div>}
+    {event.status === 'scheduled' && <div className="score-footnote">{event.venue}</div>}
+  </div>;
+}
+
+export function BaseDiamond({ bases }: { bases: [boolean, boolean, boolean] }) {
+  return <span className="base-diamond" role="img" aria-label={`Runners: ${bases.map((occupied, i) => occupied ? ['first', 'second', 'third'][i] : null).filter(Boolean).join(' and ') || 'bases empty'}`}>
+    <i className={`base second ${bases[1] ? 'occupied' : ''}`}/><i className={`base third ${bases[2] ? 'occupied' : ''}`}/><i className={`base first ${bases[0] ? 'occupied' : ''}`}/>
+  </span>;
+}
+
+export function BaseballScore({ event }: { event: BaseballFixture }) {
+  return <>
+    <div className="baseball-score"><div className="team-lines">{event.participants.map((participant, i) => <TeamRow key={participant.short} participant={participant} score={event.score?.[i]} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>)}</div>
+      {event.status === 'live' && event.bases && <div className="diamond-wrap"><BaseDiamond bases={event.bases}/><span className="outs" aria-label={`${event.outs} out`}>{[0, 1, 2].map(i => <i key={i} className={i < (event.outs ?? 0) ? 'filled' : ''}/>)}</span></div>}
+    </div>
+    <div className="score-footnote">{event.status === 'live' ? `${event.batter} batting · ${event.count} count · ${event.outs} out` : event.status === 'final' ? event.decision : `${event.pitchers[0].split(' ').at(-1)} vs ${event.pitchers[1].split(' ').at(-1)}`}</div>
+  </>;
+}
+
+export function FootballScore({ event }: { event: FootballFixture }) {
+  return <>
+    <div className="team-lines">{event.participants.map((participant, i) => <TeamRow key={participant.short} participant={participant} score={event.score?.[i]} possession={event.status === 'live' && event.possession === i} winning={event.status === 'final' && (event.score?.[i] ?? 0) > (event.score?.[1 - i] ?? 0)}/>)}</div>
+    <div className="score-footnote">{event.status === 'live' ? `${event.participants[event.possession ?? 0].short} ball · ${event.situation}` : event.status === 'scheduled' ? event.venue : 'Week 1'}</div>
+  </>;
+}
+
+export function SportScore({ event }: { event: Fixture }) {
+  switch (event.sport) {
+    case 'soccer': return <SoccerScore event={event}/>;
+    case 'tennis': return <TennisScore event={event}/>;
+    case 'baseball': return <BaseballScore event={event}/>;
+    case 'football': return <FootballScore event={event}/>;
+  }
+}
+
+export function ScoreCard({ event, timeZone, from }: { event: Fixture; timeZone: string; from: string }) {
+  return <a className={`score-card ${event.sport}`} href={eventHref(event.id, from)} aria-label={`${event.participants.map(p => p.name).join(' versus ')}, ${event.status}, view event details`}>
+    <div className="card-meta"><span>{event.sport === 'tennis' ? `${event.category}’s singles · ${event.round}` : event.competition}</span><Status event={event} timeZone={timeZone}/></div>
+    <SportScore event={event}/>
+    {event.context && <div className="context"><Icon name="arrow" size={14}/><span>{event.context}</span></div>}
+  </a>;
+}
