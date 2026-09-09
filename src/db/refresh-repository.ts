@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
-import { decideRefresh, nextRefreshAt, type RefreshDecision, type RefreshResource } from '../application/refresh-policy.ts';
+import { decideRefresh, nextRefreshAt, utcDay, type RefreshDecision, type RefreshResource } from '../application/refresh-policy.ts';
 import type { ProviderId } from '../domain/ids.ts';
 import * as schema from './schema.ts';
 
@@ -17,7 +17,7 @@ export interface RefreshRepository {
 export function createDrizzleRefreshRepository<TQueryResult extends PgQueryResultHKT>(db: PgDatabase<TQueryResult, typeof schema>): RefreshRepository {
   return {
     async acquire(providerId, resource, now, reserveCalls = 1) {
-      const day = now.slice(0, 10);
+      const day = utcDay(now);
       return db.transaction(async tx => {
         await tx.insert(schema.providerDailyBudgets).values({ providerId, day, calls: 0, updatedAt: now }).onConflictDoNothing();
         await tx.insert(schema.providerSyncStates).values({ providerId, resource, nextRefreshAt: now, leaseToken: null, leaseExpiresAt: null, lastAcceptedAt: null, lastProviderObservedAt: null, lastFailureCode: null, updatedAt: now }).onConflictDoNothing();
