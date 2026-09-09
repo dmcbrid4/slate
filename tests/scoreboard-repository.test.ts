@@ -7,6 +7,7 @@ import { canonicalScoreboardPresentation, canonicalSeed, CANONICAL_DEMO_NOW, LOC
 import { createMemoryScoreboardRepository } from '../src/data/mock-scoreboard-repository.ts';
 import { hydrateScoreboardGraph, ScoreboardRepositoryError, type ScoreboardRows } from '../src/db/scoreboard-repository.ts';
 import { ownerId } from '../src/domain/ids.ts';
+import { DomainInvariantError } from '../src/domain/invariants.ts';
 import type { CollectionMemberTarget, FollowTarget } from '../src/domain/model.ts';
 
 function collectionTargetColumns(target: CollectionMemberTarget) {
@@ -147,6 +148,19 @@ test('database target discriminators cannot hydrate a missing target', () => {
   assert.throws(
     () => hydrateScoreboardGraph(broken),
     (error: unknown) => error instanceof ScoreboardRepositoryError && error.message.includes('Follow collection'),
+  );
+});
+
+test('malformed database JSON state fails with an explicit domain error', () => {
+  const rows = databaseRows();
+  const broken = {
+    ...rows,
+    events: rows.events.map((event, index) => index === 0 ? { ...event, state: { goals: [{ side: 0, minute: 'late' }] } } : event),
+  } as unknown as ScoreboardRows;
+
+  assert.throws(
+    () => hydrateScoreboardGraph(broken),
+    (error: unknown) => error instanceof DomainInvariantError && error.code === 'invalid_score_state',
   );
 });
 
