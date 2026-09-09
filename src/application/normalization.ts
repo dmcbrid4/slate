@@ -77,6 +77,13 @@ export function assertObservationInstant(observedAt: string): void {
   }
 }
 
+export function isNewerObservation(incomingObservedAt: string, storedObservedAt: string | undefined): boolean {
+  assertObservationInstant(incomingObservedAt);
+  if (storedObservedAt === undefined) return true;
+  assertObservationInstant(storedObservedAt);
+  return Date.parse(incomingObservedAt) > Date.parse(storedObservedAt);
+}
+
 export function createMappingReader(mappings: readonly ProviderEntityMapping[]): ProviderMappingReader {
   const byExternalIdentity = new Map(
     mappings.map(mapping => [

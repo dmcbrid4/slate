@@ -52,7 +52,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 23. [x] Canonical mock seed and scoreboard read-model projector — Codex, GPT-5.6 Sol / high reasoning
 24. [x] Follow targeting, relevance provenance, and deduplication — Codex, GPT-5.6 Sol / high reasoning
 25. [x] Provider contracts and mock normalizer — Codex, GPT-5.6 Sol / high reasoning
-26. [ ] Normalization test matrix — Claude, GPT-5.6 Terra / medium reasoning
+26. [x] Normalization test matrix — Claude, GPT-5.6 Terra / medium reasoning
     - Implement only the cases specified in `docs/providers.md` and `docs/phase-1.md`; do not invent provider behavior.
 27. [ ] Drizzle/PostgreSQL schema and initial migration — Codex, GPT-5.6 Sol / high reasoning
     - Claude may perform a fully specified mechanical migration step using GPT-5.6 Terra / medium reasoning.
@@ -69,6 +69,8 @@ Task #23 re-expressed the full fictional slate as a validated canonical graph in
 Task #24 moved the running scoreboard and event details onto the canonical seed and projector. `src/application/relevance.ts` derives participant, competition, competition-group, and collection matches from canonical relationships; retains every matching follow as ordered provenance; and promotes a direct participant match as primary. `src/data/destination-targets.ts` keeps stable prototype route IDs separate from canonical IDs, while `src/data/scoreboard.ts` joins projection, local follows, date selection, relevance, Event-ID deduplication, and display ordering. For You no longer reads `Fixture.follows`; overlapping targets produce one event with all matches attached. Existing behavior for followed destinations, dates, unified ATP/WTA and US Open, direct-follow priority, and empty follows is covered through the canonical path.
 
 Task #25 established the provider boundary without selecting or calling a real sports API. `src/application/normalization.ts` defines provider-neutral decoder, normalizer, mapping-reader, observation, canonical-write, warning, and batch contracts. `src/providers/mock` contains every invented provider field, a runtime decoder from `unknown`, one centralized provider-status translation, a deterministic mock-only identity policy, and a pure normalizer that emits canonical writes plus external mappings. The fixture covers all four sports and scheduled/live/final outcomes; separate ATP and WTA external group identities converge on Slate's stable US Open group; Tottenham retains a Slate-owned participant identity in another competition; and optional missing live data remains absent with structured warnings. Focused smoke tests prove the emitted batch satisfies the canonical graph invariants. Task #26 owns the exhaustive malformed-input, status, idempotency, optional-data, and observation-order test matrix.
+
+Task #26 completed that matrix in `tests/mock-provider.test.ts`. It now proves malformed and unknown values reject at the decoder/normalizer boundary; every mock status maps to its canonical counterpart; repeated observations reuse mappings and write each canonical identity once; sport-specific state stays discriminated; optional baseball live fields stay absent and issue structured warnings; and only strictly newer observation timestamps qualify to replace stored state. A source-level boundary check prevents mock-provider types from leaking into domain, read-model, component, or App Router files.
 
 ## Tasks 6–17 summary
 
