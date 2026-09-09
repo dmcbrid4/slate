@@ -43,7 +43,12 @@ test('MLB schedule decoder maps terminal and deferred game states', () => {
   assert.deepEqual(decoded.map(item => item.innings), [[[], []], [[], []]]);
 });
 
+test('MLB schedule decoder tolerates nullable pregame runs', () => {
+  const [decoded] = decodeMlbSchedule({ dates: [{ games: [{ ...game, gamePk: 9004, status: { abstractGameState: 'Preview', detailedState: 'Scheduled' }, linescore: { teams: { away: { runs: null }, home: { runs: null } }, innings: [] } }] }] });
+  assert.equal(decoded.score, undefined);
+  assert.deepEqual(decoded.innings, [[], []]);
+});
+
 test('MLB schedule decoder rejects malformed game identities with a safe path', () => {
   assert.throws(() => decodeMlbSchedule({ dates: [{ games: [{ ...game, gamePk: 0 }] }] }), (error: unknown) => error instanceof MlbDecodeError && error.path === '$.dates[0].games[0].gamePk');
 });
-

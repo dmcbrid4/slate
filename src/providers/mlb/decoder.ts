@@ -65,6 +65,7 @@ function statScore(value: unknown, path: string): readonly [number, number] | un
   const item = record(value, path);
   const away = record(item.away, `${path}.away`);
   const home = record(item.home, `${path}.home`);
+  if (away.runs === undefined || away.runs === null || home.runs === undefined || home.runs === null) return undefined;
   return [integer(away.runs, `${path}.away.runs`), integer(home.runs, `${path}.home.runs`)];
 }
 
