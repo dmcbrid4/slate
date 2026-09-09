@@ -17,6 +17,14 @@ const allowedLocalDependencies: Readonly<Record<Layer, ReadonlySet<Layer>>> = {
   db: new Set(['application', 'db', 'domain']),
 };
 
+const allowedExternalDependencies: Readonly<Record<Layer, ReadonlySet<string>>> = {
+  domain: new Set(),
+  'read-models': new Set(),
+  application: new Set(),
+  providers: new Set(),
+  db: new Set(['drizzle-orm', 'drizzle-orm/pg-core']),
+};
+
 function sourceFiles(directory: string): readonly string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
     const path = join(directory, entry.name);
@@ -59,7 +67,13 @@ test('architectural layers only import in the approved direction', () => {
     for (const file of sourceFiles(join(sourceRoot, layer))) {
       for (const specifier of importsIn(file)) {
         const dependency = resolveLocalImport(file, specifier);
-        if (!dependency) continue;
+        if (!dependency) {
+          assert.ok(
+            allowedExternalDependencies[layer].has(specifier),
+            `${relative(repositoryRoot, file)} imports disallowed external module ${specifier}.`,
+          );
+          continue;
+        }
 
         const dependencyLayer = sourceLayer(dependency);
         assert.ok(

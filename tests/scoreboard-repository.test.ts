@@ -173,6 +173,21 @@ test('malformed database JSON state fails with an explicit domain error', () => 
     () => hydrateScoreboardGraph(missingGames),
     (error: unknown) => error instanceof DomainInvariantError && error.code === 'invalid_score_state',
   );
+
+  const invalidOptionalValues = [
+    { sportId: 'tennis', state: { round: 'Quarterfinal', sets: [], points: 0 } },
+    { sportId: 'football', state: { quarters: [[], []], fieldPosition: { yardLine: 25 } } },
+  ] as const;
+  for (const invalid of invalidOptionalValues) {
+    const malformed = {
+      ...rows,
+      events: rows.events.map(event => event.sportId === invalid.sportId ? { ...event, state: invalid.state } : event),
+    } as unknown as ScoreboardRows;
+    assert.throws(
+      () => hydrateScoreboardGraph(malformed),
+      (error: unknown) => error instanceof DomainInvariantError,
+    );
+  }
 });
 
 test('client modules cannot import the canonical seed, Drizzle, or server data access', () => {

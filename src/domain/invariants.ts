@@ -62,6 +62,10 @@ function assertPosition(value: number, label: string): void {
   if (!Number.isInteger(value) || value < 0) fail('invalid_position', `${label} must be a non-negative integer.`);
 }
 
+function assertOptionalId(value: unknown, label: string): void {
+  if (value !== undefined) assertNonEmpty(value, label);
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -92,7 +96,7 @@ function assertLineScore(lines: readonly [readonly (number | null)[], readonly (
 }
 
 function assertAsset(asset: AssetRef | undefined, label: string): void {
-  if (!asset) return;
+  if (asset === undefined) return;
   if (!isRecord(asset)) fail('invalid_asset', `${label} must be an asset reference.`);
   if (asset.type === 'local' && typeof asset.path === 'string') return assertNonEmpty(asset.path, label);
   if (asset.type === 'remote' && typeof asset.url === 'string') return assertNonEmpty(asset.url, label);
@@ -114,6 +118,7 @@ function assertSoccerState(state: SoccerEventState): void {
     if (goal.addedTime !== undefined && typeof goal.addedTime !== 'number') fail('invalid_score_state', 'Goal added time must be numeric.');
     assertOptionalInteger(goal.minute as number, 0, 240, 'Goal minute');
     assertOptionalInteger(goal.addedTime as number | undefined, 0, 60, 'Goal added time');
+    assertOptionalId(goal.scorerId, 'Goal scorer');
   }
 }
 
@@ -126,9 +131,10 @@ function assertTennisState(state: TennisEventState): void {
     assertRequiredSideScore(set.games, `Tennis set ${index + 1}`);
     assertSideScore(set.tiebreak as SideScore | undefined, `Tennis set ${index + 1} tiebreak`);
   }
-  if (state.points && (!Array.isArray(state.points) || state.points.length !== 2 || state.points.some(point => typeof point !== 'string' || !point.trim()))) {
+  if (state.points !== undefined && (!Array.isArray(state.points) || state.points.length !== 2 || state.points.some(point => typeof point !== 'string' || !point.trim()))) {
     fail('invalid_score_state', 'Tennis points must not be empty.');
   }
+  assertOptionalId(state.servingParticipantId, 'Tennis server');
   if (state.durationSeconds !== undefined && (!Number.isInteger(state.durationSeconds) || state.durationSeconds < 0)) {
     fail('invalid_score_state', 'Tennis duration must be a non-negative integer number of seconds.');
   }
@@ -158,7 +164,15 @@ function assertBaseballState(state: BaseballEventState): void {
   if (state.probablePitcherIds !== undefined && (!Array.isArray(state.probablePitcherIds) || state.probablePitcherIds.length !== 2)) {
     fail('invalid_score_state', 'Baseball probable pitchers must contain two sides.');
   }
+  state.probablePitcherIds?.forEach((id, index) => assertOptionalId(id, `Baseball probable pitcher ${index + 1}`));
+  assertOptionalId(state.batterId, 'Baseball batter');
+  assertOptionalId(state.pitcherId, 'Baseball pitcher');
   if (state.decision !== undefined && !isRecord(state.decision)) fail('invalid_score_state', 'Baseball decision must be an object.');
+  if (state.decision !== undefined) {
+    assertOptionalId(state.decision.winningPitcherId, 'Baseball winning pitcher');
+    assertOptionalId(state.decision.losingPitcherId, 'Baseball losing pitcher');
+    assertOptionalId(state.decision.savePitcherId, 'Baseball save pitcher');
+  }
 }
 
 function assertFootballState(state: FootballEventState): void {
@@ -171,8 +185,12 @@ function assertFootballState(state: FootballEventState): void {
   if (state.distance !== undefined && (!Number.isInteger(state.distance) || state.distance < 0)) {
     fail('invalid_score_state', 'Football distance must be a non-negative integer.');
   }
-  if (state.fieldPosition && (!isRecord(state.fieldPosition) || !Number.isInteger(state.fieldPosition.yardLine) || (state.fieldPosition.yardLine as number) < 0 || (state.fieldPosition.yardLine as number) > 50)) {
-    fail('invalid_score_state', 'Football yard line must be an integer from 0 to 50.');
+  assertOptionalId(state.possessionParticipantId, 'Football possession participant');
+  if (state.fieldPosition !== undefined) {
+    if (!isRecord(state.fieldPosition) || !Number.isInteger(state.fieldPosition.yardLine) || (state.fieldPosition.yardLine as number) < 0 || (state.fieldPosition.yardLine as number) > 50) {
+      fail('invalid_score_state', 'Football yard line must be an integer from 0 to 50.');
+    }
+    assertNonEmpty(state.fieldPosition.territoryParticipantId, 'Football field-position participant');
   }
 }
 
@@ -378,7 +396,7 @@ export function assertDomainGraph(graph: DomainGraph): void {
       fail('invalid_event_reference', `Tennis server must participate in event ${event.id}.`);
     }
     const assertSportReference = (participantId: string | undefined, label: string) => {
-      if (!participantId) return;
+      if (participantId === undefined) return;
       const participant = participants.get(participantId);
       if (!participant) fail('missing_reference', `${label} references missing participant ${participantId}.`);
       if (participant.sportId !== event.sportId) fail('sport_mismatch', `${label} must reference a ${event.sportId} participant.`);
