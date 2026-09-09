@@ -41,7 +41,13 @@ export async function getInitialScoreboardData() {
     if (isFootballDataModeEnabled()) { try { current = await getFootballDataScoreboardData(current, now); } catch {} }
     return current;
   };
-  if (!isLiveTennisModeEnabled()) return applyOptionalProviders(mockData, new Date().toISOString());
+  if (!isLiveTennisModeEnabled()) {
+    console.warn('live_tennis_disabled', {
+      databaseConfigured: Boolean(process.env.DATABASE_URL?.trim()),
+      apiKeyConfigured: Boolean(process.env.LIVE_TENNIS_API_KEY?.trim()),
+    });
+    return applyOptionalProviders(mockData, new Date().toISOString());
+  }
 
   // `Promise.race` doesn't cancel the loser: if the timeout wins, the real-data promise is still
   // running and will eventually settle on its own. Attach a no-op catch so that later rejection
@@ -56,7 +62,11 @@ export async function getInitialScoreboardData() {
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error('real_tennis_timeout')), REAL_TENNIS_TIMEOUT_MS)),
     ]);
     return applyOptionalProviders(data, data.asOf);
-  } catch {
+  } catch (error) {
+    console.error('live_tennis_scoreboard_fallback', {
+      name: error instanceof Error ? error.name : 'UnknownError',
+      code: typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string' ? error.code : undefined,
+    });
     // Anything unexpected in the real path (database unreachable, too slow, etc.) must not break
     // the page - fall back to the mock experience rather than a 500 or an indefinite wait.
     return applyOptionalProviders(mockData, new Date().toISOString());
