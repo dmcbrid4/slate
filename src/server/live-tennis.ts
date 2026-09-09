@@ -111,23 +111,27 @@ export async function getRealTennisGraph<TQueryResult extends PgQueryResultHKT>(
   const writeRepository = createDrizzleNormalizationWriteRepository(db);
   const client = createLiveTennisHttpClient({ apiKey: process.env.LIVE_TENNIS_API_KEY! });
   const mappings = await writeRepository.readProviderMappings(LIVE_TENNIS_PROVIDER_ID);
+  const scoreboardRepository = createDrizzleScoreboardRepository(db);
+  const storedGraph = await scoreboardRepository.readGraph(LOCAL_PRIMARY_OWNER_ID);
 
-  try {
-    await runLiveTennisRefreshCycle({
+  const refresh = runLiveTennisRefreshCycle({
       refreshRepository,
       writeRepository,
       providerId: LIVE_TENNIS_PROVIDER_ID,
       now,
       handlers: buildHandlers(client, writeRepository, mappings, now),
-    });
-  } catch {
-    // A refresh cycle failure must never block serving the last accepted snapshot below.
-  }
+    }).then(() => true).catch(() => false);
+
+  // Serving an accepted snapshot must not wait on a slow provider. Give a due refresh a short
+  // opportunity to complete, then return the stored graph while the refresh settles safely.
+  const refreshed = await Promise.race([
+    refresh,
+    new Promise<false>(resolve => setTimeout(() => resolve(false), 2_500)),
+  ]);
 
   // The owner here only scopes which `follows` rows come back, and the merge step (the caller)
   // discards this graph's follows entirely in favor of the mock graph's - no real Follow rows
   // exist in Postgres yet regardless of which owner is requested.
-  const scoreboardRepository = createDrizzleScoreboardRepository(db);
-  const graph = await scoreboardRepository.readGraph(LOCAL_PRIMARY_OWNER_ID);
+  const graph = refreshed ? await scoreboardRepository.readGraph(LOCAL_PRIMARY_OWNER_ID) : storedGraph;
   return { ...graph, participants: graph.participants.filter(p => p.sportId === 'tennis'), events: graph.events.filter(e => e.sportId === 'tennis') };
 }

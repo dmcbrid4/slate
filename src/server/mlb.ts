@@ -77,7 +77,7 @@ export function mergeMlbScoreboardData(data: ScoreboardData, games: readonly Mlb
 export async function getMlbScoreboardData(data: ScoreboardData, now: string): Promise<ScoreboardData> {
   const center = new Date(now);
   const start = new Date(center.getTime() - 5 * 24 * 60 * 60_000).toISOString();
-  const end = new Date(center.getTime() + 6 * 24 * 60 * 60_000).toISOString();
+  const end = new Date(center.getTime() + 5 * 24 * 60 * 60_000).toISOString();
   const payload = await fetchMlbSchedule(datePart(start), datePart(end));
   return { ...mergeMlbScoreboardData(data, decodeMlbSchedule(payload)), asOf: now };
 }
