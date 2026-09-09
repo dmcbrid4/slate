@@ -26,7 +26,7 @@ export const eventResultEnum = pgEnum('event_result', ['win', 'loss', 'draw']);
 export const collectionTargetTypeEnum = pgEnum('collection_target_type', ['participant', 'competition', 'competition_group']);
 export const followTargetTypeEnum = pgEnum('follow_target_type', ['participant', 'competition', 'competition_group', 'collection']);
 export const providerCanonicalTypeEnum = pgEnum('provider_canonical_type', ['participant', 'competition', 'competition_group', 'season', 'event']);
-export const providerRefreshResourceEnum = pgEnum('provider_refresh_resource', ['live_matches', 'upcoming_matches', 'fixtures', 'tournaments']);
+export const providerRefreshResourceEnum = pgEnum('provider_refresh_resource', ['live_matches', 'upcoming_matches', 'fixtures', 'tournaments', 'match_resolution']);
 
 const canonicalIdPattern = sql.raw("'^[a-z0-9]+(-[a-z0-9]+)*$'");
 

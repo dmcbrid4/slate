@@ -15,6 +15,13 @@
       "when": 1788966927090,
       "tag": "0001_aromatic_trauma",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788979858396,
+      "tag": "0002_omniscient_the_hand",
+      "breakpoints": true
     }
   ]
 }

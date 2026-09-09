@@ -1,6 +1,6 @@
 import type { ProviderId } from '../domain/ids.ts';
 
-export const refreshResources = ['live_matches', 'upcoming_matches', 'fixtures', 'tournaments'] as const;
+export const refreshResources = ['live_matches', 'upcoming_matches', 'fixtures', 'tournaments', 'match_resolution'] as const;
 export type RefreshResource = typeof refreshResources[number];
 
 export const LIVE_TENNIS_DAILY_CALL_LIMIT = 80;
@@ -11,6 +11,7 @@ const refreshIntervals: Readonly<Record<RefreshResource, number>> = {
   upcoming_matches: 6 * 60 * 60_000,
   fixtures: 6 * 60 * 60_000,
   tournaments: 24 * 60 * 60_000,
+  match_resolution: 30 * 60_000,
 };
 
 export interface ProviderSyncSnapshot {

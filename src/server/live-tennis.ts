@@ -2,6 +2,7 @@ import 'server-only';
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import { createMappingReader, type NormalizationBatch } from '../application/normalization.ts';
 import { runLiveTennisRefreshCycle, type RefreshResourceHandler } from '../application/live-tennis-refresh.ts';
+import type { NormalizationRepository } from '../application/scoreboard-repository.ts';
 import { providerId } from '../domain/ids.ts';
 import type { DomainGraph, ProviderEntityMapping } from '../domain/model.ts';
 import { LOCAL_PRIMARY_OWNER_ID } from '../data/canonical-seed.ts';
@@ -12,10 +13,22 @@ import * as schema from '../db/schema.ts';
 import {
   createLiveTennisHttpClient,
   liveTennisFixtureListDecoder,
+  liveTennisMatchDecoder,
   liveTennisMatchListDecoder,
   liveTennisNormalizer,
 } from '../providers/live-tennis/index.ts';
 import type { LiveTennisFixture, LiveTennisMatch } from '../providers/live-tennis/types.ts';
+
+// A match past this age without a fresh `live_matches` observation has almost certainly stopped
+// being returned by the provider's live/upcoming endpoints (both are all `listMatches` can query -
+// see `LiveTennisMatchListOptions`), which is the only way a real match reaches `'final'` today.
+// Twice the `live_matches` cadence tolerates one skipped cycle before treating a match as stale.
+const MATCH_RESOLUTION_LOOKBACK_MS = 60 * 60_000;
+// `acquire()` reserves this many calls against the daily budget up front, before the DB check
+// below even runs, so an empty cycle (no stale match found) still spends this every time the
+// resource is due. Kept at 1 to keep that worst-case cost negligible; resolving one stale match
+// per 30-minute cycle self-corrects within a cycle or two even if several end at once.
+const MATCH_RESOLUTION_LIMIT = 1;
 
 export const LIVE_TENNIS_PROVIDER_ID = providerId('live-tennis');
 
@@ -48,6 +61,7 @@ async function fetchBothTours(
 
 function buildHandlers(
   client: ReturnType<typeof createLiveTennisHttpClient>,
+  writeRepository: NormalizationRepository,
   mappings: readonly ProviderEntityMapping[],
   now: string,
 ): readonly RefreshResourceHandler[] {
@@ -64,6 +78,19 @@ function buildHandlers(
         const result = await client.listFixtures();
         const fixtures = liveTennisFixtureListDecoder.parse(result.body).data;
         return normalize([], fixtures);
+      },
+    },
+    {
+      resource: 'match_resolution', reserveCalls: MATCH_RESOLUTION_LIMIT,
+      async fetchAndNormalize() {
+        const olderThan = new Date(Date.parse(now) - MATCH_RESOLUTION_LOOKBACK_MS).toISOString();
+        const stale = await writeRepository.findStaleLiveEvents(LIVE_TENNIS_PROVIDER_ID, olderThan, MATCH_RESOLUTION_LIMIT);
+        if (stale.length === 0) return undefined;
+        const matches = await Promise.all(stale.map(async event => {
+          const result = await client.getMatch(Number(event.providerEntityId));
+          return liveTennisMatchDecoder.parse(result.body);
+        }));
+        return normalize(matches, []);
       },
     },
   ];
@@ -91,7 +118,7 @@ export async function getRealTennisGraph<TQueryResult extends PgQueryResultHKT>(
       writeRepository,
       providerId: LIVE_TENNIS_PROVIDER_ID,
       now,
-      handlers: buildHandlers(client, mappings, now),
+      handlers: buildHandlers(client, writeRepository, mappings, now),
     });
   } catch {
     // A refresh cycle failure must never block serving the last accepted snapshot below.

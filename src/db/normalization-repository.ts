@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, lt } from 'drizzle-orm';
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import type { NormalizationRepository, NormalizationWriteResult } from '../application/scoreboard-repository.ts';
 import type { CanonicalWrite, NormalizationBatch } from '../application/normalization.ts';
@@ -84,6 +84,22 @@ export function createDrizzleNormalizationWriteRepository<TQueryResult extends P
     async readProviderMappings(providerId) {
       const mappings = await db.select().from(schema.providerEntityMappings).where(eq(schema.providerEntityMappings.providerId, providerId));
       return mappings.map(mappingFromRow);
+    },
+    async findStaleLiveEvents(providerId, olderThan, limit) {
+      const rows = await db.select({
+        eventId: schema.events.id,
+        providerEntityId: schema.providerEntityMappings.providerEntityId,
+      })
+        .from(schema.events)
+        .innerJoin(schema.providerEntityMappings, and(
+          eq(schema.providerEntityMappings.eventId, schema.events.id),
+          eq(schema.providerEntityMappings.providerId, providerId),
+          eq(schema.providerEntityMappings.providerEntityType, 'event'),
+        ))
+        .where(and(eq(schema.events.status, 'live'), lt(schema.events.observedAt, olderThan)))
+        .orderBy(asc(schema.events.observedAt))
+        .limit(limit);
+      return rows;
     },
     async writeNormalizationBatch(batch: NormalizationBatch): Promise<NormalizationWriteResult> {
       assertBatchShape(batch);

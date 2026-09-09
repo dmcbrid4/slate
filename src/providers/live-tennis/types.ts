@@ -7,7 +7,9 @@ export type LiveTennisDraw = typeof liveTennisDraws[number];
 export const liveTennisMatchStatuses = ['upcoming', 'live', 'completed', 'cancelled'] as const;
 export type LiveTennisMatchStatus = typeof liveTennisMatchStatuses[number];
 
-export const liveTennisEventStatuses = ['Retired', 'Cancelled', 'Walk Over', 'Postponed', 'Interrupted'] as const;
+// 'Finished' observed firsthand via a direct `getMatch` call on a completed real US Open match
+// (2026-09-09) - a normal completion, unlike the other values here which are all abnormal endings.
+export const liveTennisEventStatuses = ['Retired', 'Cancelled', 'Walk Over', 'Postponed', 'Interrupted', 'Finished'] as const;
 export type LiveTennisEventStatus = typeof liveTennisEventStatuses[number];
 
 export const liveTennisFixtureStatuses = ['scheduled', 'live', 'finished'] as const;

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."provider_refresh_resource" ADD VALUE 'match_resolution';
