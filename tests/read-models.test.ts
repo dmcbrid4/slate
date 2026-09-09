@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { canonicalScoreboardPresentation, canonicalSeed } from '../src/data/canonical-seed.ts';
 import { fixtures } from '../src/data/fixtures.ts';
-import { createScoreboardProjector, projectScoreboardEvents, ScoreboardProjectionError } from '../src/read-models/project-scoreboard.ts';
+import { createScoreboardProjector, projectScoreboardEvents } from '../src/read-models/project-scoreboard.ts';
 
 function withoutLegacyFollows() {
   return fixtures.map(({ follows, ...event }) => {
@@ -54,11 +54,15 @@ test('projector resolves structured live state into sport-specific presentation'
   assert.deepEqual(soccer.sport === 'soccer' ? soccer.goals.map(goal => goal.player) : [], ['Solanke', 'Salah', 'Kulusevski']);
 });
 
-test('projector fails explicitly when required presentation metadata is absent', () => {
-  const presentation = { ...canonicalScoreboardPresentation, participants: new Map() };
-  const project = createScoreboardProjector(canonicalSeed, presentation);
-  assert.throws(
-    () => project(canonicalSeed.events[0]),
-    (error: unknown) => error instanceof ScoreboardProjectionError && error.message.includes('Missing scoreboard presentation'),
-  );
+test('projector falls back to canonical identity when optional presentation metadata is absent', () => {
+  const project = createScoreboardProjector(canonicalSeed, {});
+  const soccer = project(canonicalSeed.events.find(event => event.id === 'tot-liv')!);
+  const tennis = project(canonicalSeed.events.find(event => event.id === 'alcaraz-sinner')!);
+
+  assert.equal(soccer.participants[0].name, 'Tottenham Hotspur');
+  assert.equal(soccer.participants[0].short, 'Tottenham');
+  assert.equal(soccer.participants[0].mark, 'T');
+  assert.equal(soccer.participants[0].color, 'neutral');
+  assert.equal(tennis.participants[0].mark, 'ES');
+  assert.equal(tennis.context, undefined);
 });

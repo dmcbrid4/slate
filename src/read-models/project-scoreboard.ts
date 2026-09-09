@@ -18,15 +18,15 @@ import type {
 } from './scoreboard.ts';
 
 export interface ParticipantPresentation {
-  readonly name: string;
-  readonly short: string;
-  readonly mark: string;
-  readonly color: string;
+  readonly name?: string;
+  readonly short?: string;
+  readonly mark?: string;
+  readonly color?: string;
 }
 
 export interface ScoreboardPresentation {
-  readonly participants: ReadonlyMap<ParticipantId, ParticipantPresentation>;
-  readonly context: ReadonlyMap<EventId, string>;
+  readonly participants?: ReadonlyMap<ParticipantId, ParticipantPresentation>;
+  readonly context?: ReadonlyMap<EventId, string>;
 }
 
 export class ScoreboardProjectionError extends Error {
@@ -61,6 +61,16 @@ function ordinal(value: number): string {
   return `${value}th`;
 }
 
+function fallbackMark(participant: Participant): string {
+  if (participant.countryCode) return participant.countryCode;
+  return participant.shortName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase())
+    .join('') || '•';
+}
+
 export function createScoreboardProjector(graph: DomainGraph, presentation: ScoreboardPresentation) {
   const participants = new Map(graph.participants.map(participant => [participant.id, participant]));
   const competitions = new Map(graph.competitions.map(competition => [competition.id, competition]));
@@ -73,10 +83,19 @@ export function createScoreboardProjector(graph: DomainGraph, presentation: Scor
     relationsByEvent.set(relation.eventId, relations);
   }
 
-  const projectParticipant = (participant: Participant, relation: EventParticipant): ScoreboardParticipant => {
-    const display = requireValue(presentation.participants.get(participant.id), `Missing scoreboard presentation for ${participant.id}.`);
+  const participantDisplay = (participant: Participant): ScoreboardParticipant => {
+    const display = presentation.participants?.get(participant.id);
     return {
-      ...display,
+      name: display?.name ?? participant.name,
+      short: display?.short ?? participant.shortName,
+      mark: display?.mark ?? fallbackMark(participant),
+      color: display?.color ?? 'neutral',
+    };
+  };
+
+  const projectParticipant = (participant: Participant, relation: EventParticipant): ScoreboardParticipant => {
+    return {
+      ...participantDisplay(participant),
       ...(relation.seed === undefined ? {} : { seed: relation.seed }),
     };
   };
@@ -95,7 +114,7 @@ export function createScoreboardProjector(graph: DomainGraph, presentation: Scor
     const group = competition.competitionGroupId ? groups.get(competition.competitionGroupId) : undefined;
     const first = participantOnSide(event, 0);
     const second = participantOnSide(event, 1);
-    const context = presentation.context.get(event.id);
+    const context = presentation.context?.get(event.id);
     return {
       id: asString(event.id),
       competition: group?.name ?? competition.name,
@@ -194,7 +213,7 @@ export function createScoreboardProjector(graph: DomainGraph, presentation: Scor
     const territory = territorySide === undefined ? undefined : participantOnSide(event, territorySide).participant;
     const situation = event.state.down === undefined || event.state.distance === undefined || !fieldPosition || !territory
       ? undefined
-      : `${ordinal(event.state.down)} & ${event.state.distance} · ${requireValue(presentation.participants.get(territory.id), `Missing scoreboard presentation for ${territory.id}.`).short} ${fieldPosition.yardLine}`;
+      : `${ordinal(event.state.down)} & ${event.state.distance} · ${participantDisplay(territory).short} ${fieldPosition.yardLine}`;
     const hasQuarters = event.state.quarters.some(line => line.length > 0);
     const projected: FootballScoreboardEvent = {
       ...base,
