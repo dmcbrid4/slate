@@ -40,7 +40,10 @@ export type CanonicalWrite =
 
 export type NormalizationWarningCode =
   | 'missing_venue'
-  | 'missing_live_detail';
+  | 'missing_live_detail'
+  | 'unsupported_tournament'
+  | 'out_of_scope_match'
+  | 'missing_schedule';
 
 export interface NormalizationWarning {
   readonly code: NormalizationWarningCode;

@@ -74,8 +74,8 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - Added a server-only, no-store native-fetch client whose successful bodies remain `unknown`, structured leak-safe HTTP/rate-limit errors, and endpoint-specific runtime decoders for the verified match, score, fixture, tournament, player, and usage shapes. The adapter remains disconnected from normalization, persistence, refresh coordination, and product UI.
 34. [x] Provider contract fixture matrix — Claude, GPT-5.6 Terra / medium reasoning
     - Synthetic fixtures now cover documented match lifecycle, event status, draws, round codes, optional merger fields, live/completed/reduced score diagnostics, fixture schedule identity and opaque status, nullable tournament/player/usage fields, list metadata, malformed paths, every provider route, HTTP failures, rate limits, and 410 forwarding. No raw provider response or credential entered the repository.
-35. [ ] Tournament registry and tennis normalizer — Codex, GPT-5.6 Sol / high reasoning
-    - Unify mapped ATP/WTA member competitions through Slate-owned groups; never group by name in the ingestion hot path.
+35. [x] Tournament registry and tennis normalizer — Codex, GPT-5.6 Sol / high reasoning
+    - The reviewed registry maps the verified Live Tennis ATP/WTA US Open IDs to distinct Slate member competitions under one Slate-owned group; the pure normalizer uses fixture `match_id` only to recover a schedule, preserves match lifecycle truth, suppresses final-match point/server fields, and records unknown/excluded records as structured warnings. It remains disconnected from persistence, refresh coordination, and product UI.
 36. [ ] Persistence and atomic normalization-write boundary — Codex, GPT-5.6 Sol / high reasoning
     - Claude may generate the fully specified migration with GPT-5.6 Terra / medium reasoning after Codex fixes the shape.
 37. [ ] Atomic write, observation-order, and idempotency tests — Claude, GPT-5.6 Terra / high reasoning

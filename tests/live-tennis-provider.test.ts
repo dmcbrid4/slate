@@ -11,6 +11,10 @@ import {
   LiveTennisDecodeError,
 } from '../src/providers/live-tennis/decoder.ts';
 import { createLiveTennisHttpClient, LiveTennisHttpError } from '../src/providers/live-tennis/http.ts';
+import { createMappingReader } from '../src/application/normalization.ts';
+import { providerId } from '../src/domain/ids.ts';
+import { liveTennisNormalizer } from '../src/providers/live-tennis/normalizer.ts';
+import { findLiveTennisTournament } from '../src/providers/live-tennis/tournament-registry.ts';
 
 const score = {
   sets: [1, 0], games: [[6, 2], [4, 1]], points: ['30', null], server: 1,
@@ -263,4 +267,58 @@ test('HTTP client covers all documented route shapes and structured failures', a
   }
   const malformedForward = createLiveTennisHttpClient({ apiKey: 'synthetic-secret', fetch: (async () => new Response(JSON.stringify({ merged_into: 0, merged_at: 'bad' }), { status: 410 })) as typeof fetch });
   await assert.rejects(malformedForward.getMatch(501), (error: unknown) => error instanceof LiveTennisHttpError && error.code === 'merged' && error.mergedInto === null && error.mergedAt === null);
+});
+
+test('reviewed tournament registry unifies provider members and normalizes truthful tennis state', () => {
+  assert.equal(findLiveTennisTournament('1217')?.competitionGroupId, findLiveTennisTournament('1218')?.competitionGroupId);
+  assert.equal(findLiveTennisTournament('unreviewed'), undefined);
+
+  const typedMatch = liveTennisMatchDecoder.parse(match);
+  const fixture = liveTennisFixtureListDecoder.parse({ data: [{
+    id: 9001, match_id: 501, event_date: '2026-09-09', start_time: '2026-09-09T16:00:00Z',
+    player1_id: 101, player2_id: 102, gender: 'men', is_qualifying: false, tour: 'atp',
+    tournament: 'A provider display name is not identity', round: 'Quarterfinal', round_code: 'QF', surface: 'hard',
+    player1_name: 'Player One', player2_name: 'Player Two', reason: null, status: 'scheduled', updated_at: '2026-09-09T14:00:00Z',
+  }], meta }).data[0];
+  const batch = liveTennisNormalizer.normalize({
+    matches: [{ ...typedMatch, tournament_id: '1217', tournament: 'A changed provider display name', scheduled_time: null, score: { ...typedMatch.score!, points: ['30', '15'] as const } }],
+    fixtures: [fixture],
+  }, { providerId: providerId('live-tennis'), observedAt: '2026-09-09T15:01:00Z', mappings: createMappingReader([]) });
+
+  const competition = batch.records.find(write => write.type === 'competition');
+  const event = batch.records.find(write => write.type === 'event');
+  assert.equal(competition?.type, 'competition');
+  assert.equal(competition?.record.id, 'us-open-atp');
+  assert.equal(competition?.record.competitionGroupId, 'us-open');
+  assert.equal(event?.type, 'event');
+  if (event?.type === 'event' && event.record.sportId === 'tennis') {
+    assert.equal(event.record.startsAt, fixture.start_time);
+    assert.deepEqual(event.record.state.points, ['30', '15']);
+    assert.equal(event.record.state.servingParticipantId, 'live-tennis-player-101');
+  }
+  assert.equal(batch.warnings.length, 0);
+
+  const finalBatch = liveTennisNormalizer.normalize({
+    matches: [{ ...typedMatch, tournament_id: '1217', status: 'completed', scheduled_time: fixture.start_time, score: { ...typedMatch.score!, points: ['0', '0'] as const, server: 1 } }],
+    fixtures: [],
+  }, { providerId: providerId('live-tennis'), observedAt: '2026-09-09T15:02:00Z', mappings: createMappingReader([]) });
+  const finalEvent = finalBatch.records.find(write => write.type === 'event');
+  assert.equal(finalEvent?.type, 'event');
+  if (finalEvent?.type === 'event' && finalEvent.record.sportId === 'tennis') {
+    assert.equal(finalEvent.record.state.points, undefined);
+    assert.equal(finalEvent.record.state.servingParticipantId, undefined);
+  }
+});
+
+test('normalizer skips unknown and excluded tennis records with structured warnings', () => {
+  const typedMatch = liveTennisMatchDecoder.parse(match);
+  const batch = liveTennisNormalizer.normalize({
+    matches: [
+      { ...typedMatch, tournament_id: 'unreviewed', scheduled_time: '2026-09-09T16:00:00Z' },
+      { ...typedMatch, id: 502, draw: 'doubles', is_doubles: true, tournament_id: '1217', scheduled_time: '2026-09-09T17:00:00Z' },
+      { ...typedMatch, id: 503, tournament_id: null, scheduled_time: '2026-09-09T18:00:00Z' },
+    ], fixtures: [],
+  }, { providerId: providerId('live-tennis'), observedAt: '2026-09-09T15:01:00Z', mappings: createMappingReader([]) });
+  assert.deepEqual(batch.records, []);
+  assert.deepEqual(batch.warnings.map(warning => warning.code), ['unsupported_tournament', 'out_of_scope_match', 'unsupported_tournament']);
 });
