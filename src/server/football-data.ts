@@ -58,5 +58,5 @@ export async function getFootballDataScoreboardData(data: ScoreboardData, now: s
   const end = new Date(center.getTime() + 48 * 60 * 60_000).toISOString();
   const payload = await fetchFootballMatches(datePart(start), datePart(end));
   const matches = decodeFootballDataMatches(payload);
-  return matches.length === 0 ? data : mergeFootballDataScoreboardData(data, matches);
+  return matches.length === 0 ? data : { ...mergeFootballDataScoreboardData(data, matches), asOf: now };
 }

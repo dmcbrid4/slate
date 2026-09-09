@@ -79,6 +79,5 @@ export async function getMlbScoreboardData(data: ScoreboardData, now: string): P
   const start = new Date(center.getTime() - 24 * 60 * 60_000).toISOString();
   const end = new Date(center.getTime() + 48 * 60 * 60_000).toISOString();
   const payload = await fetchMlbSchedule(datePart(start), datePart(end));
-  return mergeMlbScoreboardData(data, decodeMlbSchedule(payload));
+  return { ...mergeMlbScoreboardData(data, decodeMlbSchedule(payload)), asOf: now };
 }
-
