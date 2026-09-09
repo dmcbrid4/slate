@@ -16,7 +16,7 @@ export interface ScoreboardEventRecord {
 export interface ScoreboardData {
   readonly asOf: string;
   /** Identifies the live provider only when the request was served from it. */
-  readonly source?: 'live-tennis';
+  readonly source?: 'live-tennis' | 'live-mlb' | 'live-tennis+mlb';
   readonly records: readonly ScoreboardEventRecord[];
 }
 

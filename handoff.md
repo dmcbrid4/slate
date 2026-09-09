@@ -100,8 +100,12 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 47. [ ] Phase 2 final validation and handoff — Claude, GPT-5.6 Sonnet / high reasoning
 48. [x] Additional-sport provider decision gate — Claude, GPT-5.6 Sonnet / high reasoning
     - Triggered by real experience, not speculation: tennis's free tier hit a real provider-side rate limit mid-session, on top of the already-designed 30-minute cadence and shared 80-calls/day budget, leaving live scores visibly stale for over an hour. The user chose to defer #40's paid-tennis decision and look at soccer/MLB/NFL instead, to see whether another sport's free tier avoids that failure mode entirely. Provider decision itself (which sport, if any, to build next) is still open — this only records the research.
+49. [x] MLB schedule and live-score vertical slice — Codex, GPT-5.6 Sol / high reasoning
+    - Added an opt-in server-side MLB Stats API adapter with runtime decoding for schedule, score, inning, runners, outs, count, batter, pitcher, probable pitchers, and lifecycle states.
+    - It replaces only the fictional baseball records for games involving the MLB teams already represented in Slate and falls back to the mock scoreboard on provider or decode failure. Enable with `MLB_API_ENABLED=true`; no key is required.
+    - No play-by-play, standings, rankings, background refresh, browser-to-provider calls, or persistence migration were added. Details live in `docs/phase-2-mlb.md`.
 
-Phase 2 implementation must preserve unified ATP/WTA, Slate-owned IDs, explicit date controls, and mock local startup. It must not add authentication, another sport, official image assets, Redis, queues, workers, cron, SSE, WebSockets, odds, news, or AI-generated Context.
+Phase 2 implementation must preserve unified ATP/WTA, Slate-owned IDs, explicit date controls, and mock local startup. It must not add authentication, additional sports beyond the explicitly selected MLB slice, official image assets, Redis, queues, workers, cron, SSE, WebSockets, odds, news, or AI-generated Context.
 
 Phase 1 implementation must preserve the Phase 0 UX and must not include a real sports provider, auth, polling, queues, Redis, workers, SSE, WebSockets, or Phase 2 tennis integration.
 

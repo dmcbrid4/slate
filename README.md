@@ -1,6 +1,6 @@
 # Slate
 
-A mobile-first personal sports scoreboard. The repository contains the complete Phase 0 mock-data product experience and Phase 1 canonical architecture. Phase 2 tennis architecture is defined, while the running app still uses fictionalized local data by default.
+A mobile-first personal sports scoreboard. The repository contains the complete Phase 0 mock-data product experience, Phase 1 canonical architecture, and opt-in Phase 2 tennis and MLB provider slices. The running app still uses fictionalized local data by default.
 
 [The complete product brief](prompt.md) is the source of truth. See the [Phase 0 implementation record](docs/phase-0.md), [Phase 1 plan](docs/phase-1.md), [Phase 1 architecture audit](docs/phase-1-audit.md), and [Phase 2 tennis architecture](docs/phase-2.md) for the current scope and decisions.
 
@@ -13,7 +13,9 @@ npm ci
 npm run dev
 ```
 
-Open **http://localhost:3000**. No environment variables, accounts, API keys, or database are required.
+Open **http://localhost:3000**. No environment variables, accounts, API keys, or database are required for mock mode.
+
+To opt into the server-side MLB Stats API slice, set `MLB_API_ENABLED=true` in `.env.local`. It requires no key. The slice is limited to schedule and live-score data for the MLB teams represented in Slate and falls back to mock data when the provider is unavailable. See [the MLB Phase 2 record](docs/phase-2-mlb.md).
 
 For phone testing, connect your phone and computer to the same Wi-Fi, then open `http://<your-computer-LAN-IP>:3000` on the phone. The dev server listens on all interfaces. Normal browser use works over local HTTP; standalone installation behavior depends on browser and secure-context requirements.
 
@@ -63,4 +65,4 @@ tests/                Domain, normalization, persistence, architecture, and UX t
 docs/                 Phase records, domain design, provider boundary, and audit
 ```
 
-Runtime dependencies are Next.js, React, React DOM, Drizzle ORM, and the server-only marker. No database driver or connection is configured, so local startup does not require PostgreSQL. No real sports provider, authentication, queues, workers, or live-score infrastructure is included. The manifest, icons, and safe-area styling provide PWA groundwork; offline caching is not implemented.
+Runtime dependencies are Next.js, React, React DOM, Drizzle ORM, and the server-only marker. No database driver or connection is required for mock mode, so local startup does not require PostgreSQL. The provider slices are server-side request-driven reads only; there is no authentication, queue, worker, browser provider connection, or production live-score infrastructure. The manifest, icons, and safe-area styling provide PWA groundwork; offline caching is not implemented.
