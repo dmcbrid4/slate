@@ -11,7 +11,8 @@ import { Mark, ScoreCard } from './ScoreCard';
 export function DateNav({ day, destination, timeZone, asOf }: { day: Day; destination: string; timeZone: string; asOf: string }) {
   const selectedRef = useRef<HTMLAnchorElement>(null);
   useEffect(() => {
-    selectedRef.current?.scrollIntoView({ block: 'nearest', inline: 'center' });
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    selectedRef.current?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
   }, [day]);
   return <nav className="date-nav" aria-label="Scoreboard date">{days.map(item => {
     const date = selectedDate(asOf, item, timeZone);
