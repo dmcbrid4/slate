@@ -80,6 +80,11 @@ function assertSideScore(score: SideScore | undefined, label: string): void {
   }
 }
 
+function assertRequiredSideScore(score: unknown, label: string): void {
+  if (score === undefined) fail('invalid_score_state', `${label} is required.`);
+  assertSideScore(score as SideScore, label);
+}
+
 function assertLineScore(lines: readonly [readonly (number | null)[], readonly (number | null)[]], label: string): void {
   if (!Array.isArray(lines) || lines.length !== 2 || lines.some(line => !Array.isArray(line) || line.some(value => value !== null && (!Number.isInteger(value) || value < 0)))) {
     fail('invalid_score_state', `${label} must contain non-negative inning or period totals.`);
@@ -101,6 +106,9 @@ function assertSoccerState(state: SoccerEventState): void {
   assertSideScore(state.penaltyScore, 'Soccer penalty score');
   assertOptionalInteger(state.minute, 0, 240, 'Soccer minute');
   assertOptionalInteger(state.addedTime, 0, 60, 'Soccer added time');
+  if (state.period !== undefined && !['first_half', 'halftime', 'second_half', 'extra_time', 'penalties'].includes(state.period)) {
+    fail('invalid_score_state', 'Soccer period is invalid.');
+  }
   for (const goal of state.goals) {
     if (!isRecord(goal) || (goal.side !== 0 && goal.side !== 1) || typeof goal.minute !== 'number') fail('invalid_score_state', 'Soccer goals must contain a valid side and minute.');
     if (goal.addedTime !== undefined && typeof goal.addedTime !== 'number') fail('invalid_score_state', 'Goal added time must be numeric.');
@@ -115,7 +123,7 @@ function assertTennisState(state: TennisEventState): void {
   if (state.court !== undefined) assertNonEmpty(state.court, 'Tennis court');
   for (const [index, set] of state.sets.entries()) {
     if (!isRecord(set) || (set.status !== 'complete' && set.status !== 'in_progress')) fail('invalid_score_state', `Tennis set ${index + 1} has an invalid status.`);
-    assertSideScore(set.games as SideScore | undefined, `Tennis set ${index + 1}`);
+    assertRequiredSideScore(set.games, `Tennis set ${index + 1}`);
     assertSideScore(set.tiebreak as SideScore | undefined, `Tennis set ${index + 1} tiebreak`);
   }
   if (state.points && (!Array.isArray(state.points) || state.points.length !== 2 || state.points.some(point => typeof point !== 'string' || !point.trim()))) {
@@ -124,6 +132,7 @@ function assertTennisState(state: TennisEventState): void {
   if (state.durationSeconds !== undefined && (!Number.isInteger(state.durationSeconds) || state.durationSeconds < 0)) {
     fail('invalid_score_state', 'Tennis duration must be a non-negative integer number of seconds.');
   }
+  if (state.bestOf !== undefined && state.bestOf !== 3 && state.bestOf !== 5) fail('invalid_score_state', 'Tennis best-of must be 3 or 5.');
   const inProgress = state.sets.filter(set => set.status === 'in_progress').length;
   if (inProgress > 1 || (inProgress === 1 && state.sets.at(-1)?.status !== 'in_progress')) {
     fail('invalid_score_state', 'Only the last tennis set may be in progress.');
@@ -139,20 +148,30 @@ function assertBaseballState(state: BaseballEventState): void {
   if (state.inning !== undefined && (!Number.isInteger(state.inning) || state.inning < 1)) {
     fail('invalid_score_state', 'Baseball inning must be a positive integer.');
   }
+  if (state.half !== undefined && state.half !== 'top' && state.half !== 'bottom') fail('invalid_score_state', 'Baseball inning half is invalid.');
   assertOptionalInteger(state.outs, 0, 2, 'Baseball outs');
   assertOptionalInteger(state.balls, 0, 3, 'Baseball balls');
   assertOptionalInteger(state.strikes, 0, 2, 'Baseball strikes');
+  if (state.bases !== undefined && (!Array.isArray(state.bases) || state.bases.length !== 3 || state.bases.some(base => typeof base !== 'boolean'))) {
+    fail('invalid_score_state', 'Baseball bases must contain three booleans.');
+  }
+  if (state.probablePitcherIds !== undefined && (!Array.isArray(state.probablePitcherIds) || state.probablePitcherIds.length !== 2)) {
+    fail('invalid_score_state', 'Baseball probable pitchers must contain two sides.');
+  }
+  if (state.decision !== undefined && !isRecord(state.decision)) fail('invalid_score_state', 'Baseball decision must be an object.');
 }
 
 function assertFootballState(state: FootballEventState): void {
   if (!isRecord(state) || !Array.isArray(state.quarters)) fail('invalid_score_state', 'Football state must contain two quarter lines.');
   assertSideScore(state.score, 'Football score');
   assertLineScore(state.quarters, 'Football quarters');
+  if (state.quarter !== undefined && ![1, 2, 3, 4, 'OT'].includes(state.quarter)) fail('invalid_score_state', 'Football quarter is invalid.');
   if (state.clock !== undefined) assertNonEmpty(state.clock, 'Football clock');
+  assertOptionalInteger(state.down, 1, 4, 'Football down');
   if (state.distance !== undefined && (!Number.isInteger(state.distance) || state.distance < 0)) {
     fail('invalid_score_state', 'Football distance must be a non-negative integer.');
   }
-  if (state.fieldPosition && (!Number.isInteger(state.fieldPosition.yardLine) || state.fieldPosition.yardLine < 0 || state.fieldPosition.yardLine > 50)) {
+  if (state.fieldPosition && (!isRecord(state.fieldPosition) || !Number.isInteger(state.fieldPosition.yardLine) || (state.fieldPosition.yardLine as number) < 0 || (state.fieldPosition.yardLine as number) > 50)) {
     fail('invalid_score_state', 'Football yard line must be an integer from 0 to 50.');
   }
 }
