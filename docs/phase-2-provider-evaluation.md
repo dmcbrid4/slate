@@ -1,0 +1,45 @@
+# Live Tennis API Free evaluation
+
+Status: authenticated feasibility in progress. The initial survey passed the basic live-score and identity checks, exposed several provider quirks, and has not yet completed the required WTA-live and ten-change observations.
+
+Evidence was captured on September 9, 2026 under the ignored `.local/provider-samples/live-tennis/` directory. This document records only structural findings; it does not reproduce raw responses.
+
+## Confirmed
+
+- The credential reports the `free` tier with 100 requests per day and 30 per minute.
+- ATP and WTA singles filters are accepted on match, fixture, and tournament endpoints.
+- One observed ATP live match supplied sets, per-set games, current points, server, tiebreak state, timestamps, sequence, staleness, and source-count fields.
+- The same ATP match ID resolved through live listing, match detail, score detail, and its fixture's `match_id`. Its player ID resolved through player detail.
+- A WTA scheduled match resolved through fixture `match_id`, upcoming-match listing, match detail, and player detail.
+- Player detail supplied current official singles ranking position, ranking points, movement, and explicit completeness metadata for the sampled ATP and WTA players.
+- The US Open catalogue uses separate stable ATP and WTA tournament IDs (`1217` and `1218`). Both carry `grand_slam`, New York, US, and hard-court metadata, so a reviewed Slate mapping can join them into one competition group without runtime name matching.
+- The explicit `/matches?status=upcoming&tour=…&draw=singles` query returned only `upcoming` rows with the requested tour and draw in both sampled categories.
+
+## Provider quirks the adapter must contain
+
+- Fixture rows have their own `id` and a separate `match_id`. The shared match identifier is `match_id`, despite reference prose saying the fixture's `id` is the match ID.
+- `/fixtures` is a schedule feed rather than an upcoming-only lifecycle list. Observed responses included `scheduled`, `live`, and `finished` rows. Some future fixtures were labelled live while the corresponding filtered live-match listing was empty.
+- Match and upcoming-list records had `start_time: null` in the sample. The fixture record carried the scheduled UTC instant. Normalization must combine fixture schedule fields with match lifecycle and identity fields.
+- Tournament results returned the requested ATP/WTA split but did not expose a `draw` field. Tournament identity must come from its stable ID and reviewed registry, not from assuming the response echoes every filter.
+- The provider documentation describes `/usage` as quota-exempt. Across repeated runs, the durable daily counter eventually advanced for the usage checks too. Slate must count every HTTP request against its own 80-call ceiling.
+- Rate-limit headers varied between adjacent requests and are not sufficient by themselves for a durable daily budget. The usage response remains the authoritative preflight input, with conservative local accounting for the current run.
+- Score `sources_count` changed in both directions across observations. Treat it as diagnostic metadata, not a monotonic quality or ordering signal.
+
+## Live update sample
+
+Four distinct ATP score sequences were observed over approximately three minutes, plus one repeated response. Provider timestamps were roughly 2–24 seconds behind capture time on the distinct responses. The samples demonstrated changing points, a stable server, and the current set appearing as `0–0` once represented in the games arrays.
+
+This is promising but below the ten-distinct-change gate. No WTA live payload, tiebreak, retirement, suspension, postponement, cancellation, or walkover was observed. Those states remain unverified rather than inferred from documentation.
+
+## Provisional decision
+
+Live Tennis API Free is viable for continuing to a decoder and normalizer only after the remaining live-observation gate is complete. The first product slice should use:
+
+- `/matches?status=live` for live lifecycle and score state;
+- `/matches?status=upcoming` for clean upcoming lifecycle and identity;
+- `/fixtures` for scheduled UTC time, joined through `match_id` and never trusted as lifecycle truth;
+- `/tournaments` plus reviewed Slate mappings for paired ATP/WTA tournament identity;
+- `/players/{id}` for current player identity and ranking summary;
+- `/usage` plus conservative application accounting for the local daily ceiling.
+
+Do not build a decoder from fixture `id`, trust fixture status, infer missing start times, or treat current player rankings as a full ranking table.

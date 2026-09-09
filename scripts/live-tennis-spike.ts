@@ -4,13 +4,15 @@ import { loadEnvFile } from "node:process";
 
 const BASE_URL = "https://api.livetennisapi.com/api/public/v1";
 const HARD_DAILY_LIMIT = 80;
-const SURVEY_REQUEST_LIMIT = 12;
-const OBSERVE_REQUEST_LIMIT = 1;
+const SURVEY_REQUEST_LIMIT = 14;
+const OBSERVE_REQUEST_LIMIT = 3;
+const UPCOMING_REQUEST_LIMIT = 4;
 const OUTPUT_ROOT = ".local/provider-samples/live-tennis";
 
 type Mode =
   | { kind: "survey" }
-  | { kind: "observe"; matchId: number };
+  | { kind: "observe"; matchId: number }
+  | { kind: "upcoming" };
 
 interface CaptureRecord {
   file: string;
@@ -33,8 +35,8 @@ interface Manifest {
   provider: "live-tennis-api";
   requestBudget: {
     dailyCeiling: number;
-    plannedQuotaCalls: number;
-    quotaCallsMade: number;
+    plannedProviderCalls: number;
+    providerCallsMade: number;
     usageBefore: number | null;
   };
   selected: {
@@ -82,18 +84,32 @@ function rows(value: unknown): unknown[] {
 }
 
 function matchId(value: unknown): number | null {
-  return isRecord(value) ? asInteger(value.id) : null;
+  if (!isRecord(value)) return null;
+  return asInteger(value.match_id) ?? asInteger(value.id);
 }
 
 function playerId(value: unknown): number | null {
-  if (!isRecord(value) || !isRecord(value.players)) return null;
-  const p1 = value.players.p1;
-  return isRecord(p1) ? asInteger(p1.id) : null;
+  if (!isRecord(value)) return null;
+  if (isRecord(value.players)) {
+    const p1 = value.players.p1;
+    if (isRecord(p1)) return asInteger(p1.id);
+  }
+  return asInteger(value.player1_id);
+}
+
+function firstScheduledFixture(value: unknown): unknown {
+  return rows(value).find(
+    (row) => isRecord(row) && row.status === "scheduled",
+  );
 }
 
 function parseMode(args: string[]): Mode {
   if (args.length === 0 || (args.length === 1 && args[0] === "survey")) {
     return { kind: "survey" };
+  }
+
+  if (args.length === 1 && args[0] === "upcoming") {
+    return { kind: "upcoming" };
   }
 
   if (args.length === 2 && args[0] === "observe") {
@@ -102,7 +118,7 @@ function parseMode(args: string[]): Mode {
   }
 
   throw new Error(
-    "Usage: npm run provider:spike -- [survey | observe <positive-match-id>]",
+    "Usage: npm run provider:spike -- [survey | upcoming | observe <positive-match-id>]",
   );
 }
 
@@ -136,14 +152,19 @@ async function run(): Promise<void> {
   await mkdir(outputDirectory, { recursive: true, mode: 0o700 });
 
   const captures: CaptureRecord[] = [];
-  const plannedQuotaCalls = mode.kind === "survey" ? SURVEY_REQUEST_LIMIT : OBSERVE_REQUEST_LIMIT;
-  let quotaCallsMade = 0;
+  const plannedProviderCalls =
+    mode.kind === "survey"
+      ? SURVEY_REQUEST_LIMIT
+      : mode.kind === "upcoming"
+        ? UPCOMING_REQUEST_LIMIT
+        : OBSERVE_REQUEST_LIMIT;
+  let providerCallsMade = 0;
 
-  async function capture(name: string, path: string, quotaExempt = false): Promise<unknown> {
-    if (!quotaExempt && quotaCallsMade >= plannedQuotaCalls) {
-      throw new Error(`Local per-run request limit (${plannedQuotaCalls}) reached.`);
+  async function capture(name: string, path: string): Promise<unknown> {
+    if (providerCallsMade >= plannedProviderCalls) {
+      throw new Error(`Local per-run request limit (${plannedProviderCalls}) reached.`);
     }
-    if (!quotaExempt) quotaCallsMade += 1;
+    providerCallsMade += 1;
 
     const response = await fetch(`${BASE_URL}${path}`, {
       headers: { "X-API-Key": key },
@@ -195,16 +216,16 @@ async function run(): Promise<void> {
     return body;
   }
 
-  const usageBeforeBody = await capture("usage-before", "/usage", true);
+  const usageBeforeBody = await capture("usage-before", "/usage");
   const usageBefore = readUsageCount(usageBeforeBody);
   if (usageBefore === null) {
     throw new Error(
       "The provider usage shape was not recognized. The ignored usage capture is available for updating the spike safely.",
     );
   }
-  if (usageBefore + plannedQuotaCalls > HARD_DAILY_LIMIT) {
+  if (usageBefore + plannedProviderCalls > HARD_DAILY_LIMIT) {
     throw new Error(
-      `Survey aborted: ${usageBefore} calls are already used and ${plannedQuotaCalls} could exceed Slate's ${HARD_DAILY_LIMIT}-call ceiling.`,
+      `Spike aborted: ${usageBefore} calls are already reported and ${plannedProviderCalls} total calls could exceed Slate's ${HARD_DAILY_LIMIT}-call ceiling.`,
     );
   }
 
@@ -213,6 +234,15 @@ async function run(): Promise<void> {
 
   if (mode.kind === "observe") {
     await capture("observed-match-score", `/matches/${mode.matchId}/score`);
+  } else if (mode.kind === "upcoming") {
+    await capture(
+      "atp-matches-upcoming-singles",
+      "/matches?status=upcoming&tour=atp&draw=singles&limit=25",
+    );
+    await capture(
+      "wta-matches-upcoming-singles",
+      "/matches?status=upcoming&tour=wta&draw=singles&limit=25",
+    );
   } else {
     const atpLive = await capture(
       "atp-live-singles",
@@ -241,8 +271,8 @@ async function run(): Promise<void> {
 
     const atpLiveMatch = rows(atpLive)[0];
     const wtaLiveMatch = rows(wtaLive)[0];
-    const atpMatch = atpLiveMatch ?? rows(atpFixtures)[0];
-    const wtaMatch = wtaLiveMatch ?? rows(wtaFixtures)[0];
+    const atpMatch = atpLiveMatch ?? firstScheduledFixture(atpFixtures);
+    const wtaMatch = wtaLiveMatch ?? firstScheduledFixture(wtaFixtures);
     atpMatchId = matchId(atpMatch);
     wtaMatchId = matchId(wtaMatch);
 
@@ -260,7 +290,7 @@ async function run(): Promise<void> {
     }
   }
 
-  await capture("usage-after", "/usage", true);
+  await capture("usage-after", "/usage");
 
   const manifest: Manifest = {
     capturedAt: capturedAt.toISOString(),
@@ -269,8 +299,8 @@ async function run(): Promise<void> {
     provider: "live-tennis-api",
     requestBudget: {
       dailyCeiling: HARD_DAILY_LIMIT,
-      plannedQuotaCalls,
-      quotaCallsMade,
+      plannedProviderCalls,
+      providerCallsMade,
       usageBefore,
     },
     selected: { atpMatchId, wtaMatchId },
@@ -282,7 +312,7 @@ async function run(): Promise<void> {
   );
 
   console.log(`Captured ${captures.length} responses in ${outputDirectory}`);
-  console.log(`Quota-counted calls made: ${quotaCallsMade}/${plannedQuotaCalls}`);
+  console.log(`Provider calls made: ${providerCallsMade}/${plannedProviderCalls}`);
   if (mode.kind === "survey") {
     console.log(`Selected ATP match: ${atpMatchId ?? "none"}; WTA match: ${wtaMatchId ?? "none"}`);
   }
