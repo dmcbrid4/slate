@@ -80,24 +80,24 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - `NormalizationRepository` now reads persisted provider mappings and accepts canonical batches through one Drizzle transaction. It locks affected event rows, rejects equal/older observations before mutation, upserts canonical rows, replaces affected event participants atomically, and keeps established provider mappings immutable. The existing schema already supplies `events.observed_at`; no migration was needed for this boundary.
 37. [x] Atomic write, observation-order, and idempotency tests — Claude, GPT-5.6 Terra / high reasoning
     - Synthetic transaction tests cover lock-first ordering, equal/older observation rejection before canonical mutation, participant replacement, immutable mapping inserts and mapping reads, invalid-batch preflight, and unknown-provider failure. They require no local PostgreSQL service or provider call.
-38. [ ] Free-tier quota and freshness coordinator — Codex, GPT-5.6 Sol / high reasoning
-    - Share accepted snapshots and refresh leases through PostgreSQL. Do not add Redis, workers, cron, SSE, or WebSockets.
-39. [ ] Opt-in real tennis scoreboard vertical slice — Codex, GPT-5.6 Sol / high reasoning
+38. [ ] Free-tier quota and freshness coordinator — Claude, GPT-5.6 Sonnet / high reasoning
+    - Complete focused synthetic transaction coverage for the committed schema, policy, and lease repository. Then review the result; do not add Redis, workers, cron, SSE, WebSockets, browser polling, or a product route yet.
+39. [ ] Opt-in real tennis scoreboard vertical slice — Claude, GPT-5.6 Sonnet / high reasoning
     - Preserve mock startup and never mix fictional and real tennis events in one list. Free mode covers upcoming/live data only.
-40. [ ] Free-slice validation and paid-capability decision — Codex, GPT-5.6 Sol / high reasoning
+40. [ ] Free-slice validation and paid-capability decision — Claude, GPT-5.6 Sonnet / high reasoning
     - Measure data quality and product value before considering API Tennis, Live Tennis API Pro, or Sportradar production access.
-41. [ ] Tennis-specific ranking and draw domain extensions — Codex, GPT-5.6 Sol / high reasoning
+41. [ ] Tennis-specific ranking and draw domain extensions — Claude, GPT-5.6 Sonnet / high reasoning
     - Finalize records and migrations only after #40 verifies the selected paid source's real semantics.
-42. [ ] Tournament and player read models/routes — Codex, GPT-5.6 Sol / high reasoning
+42. [ ] Tournament and player read models/routes — Claude, GPT-5.6 Sonnet / high reasoning
     - Preserve combined tournament defaults, history, originating score route, and browser-local date behavior.
-43. [ ] ATP/WTA rankings presentation — Claude, GPT-5.6 Terra / medium reasoning
+43. [ ] ATP/WTA rankings presentation — Claude, GPT-5.6 Sonnet / medium reasoning
     - Implement the approved read model and UI; do not add ranking algorithms or extra statistics.
-44. [ ] Basic singles draw presentation — Codex, GPT-5.6 Sol / high reasoning
+44. [ ] Basic singles draw presentation — Claude, GPT-5.6 Sonnet / high reasoning
     - Design the mobile bracket/round interaction after real draw semantics are verified; defer doubles and qualifying.
-45. [ ] Loading, stale, unavailable, and rate-limit states — Claude, GPT-5.6 Terra / medium reasoning
+45. [ ] Loading, stale, unavailable, and rate-limit states — Claude, GPT-5.6 Sonnet / medium reasoning
     - Implement only the states specified by the provider and freshness contracts.
-46. [ ] Phase 2 architecture and provider-leakage audit — Codex, GPT-6 Astra / high reasoning
-47. [ ] Phase 2 final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
+46. [ ] Phase 2 architecture and provider-leakage audit — Claude, GPT-5.6 Sonnet / high reasoning
+47. [ ] Phase 2 final validation and handoff — Claude, GPT-5.6 Sonnet / high reasoning
 
 Phase 2 implementation must preserve unified ATP/WTA, Slate-owned IDs, explicit date controls, and mock local startup. It must not add authentication, another sport, official image assets, Redis, queues, workers, cron, SSE, WebSockets, odds, news, or AI-generated Context.
 
@@ -152,9 +152,15 @@ The product should feel like a focused utility: FotMob's information density, Ap
 
 The locally runnable prototype uses realistic deterministic mock data to evaluate the product interaction and visual system. Phase 0 is complete.
 
-### Current Phase 1 boundary
+### Current Phase 2 boundary
 
-Phase 1 replaces the temporary fixture structure with the canonical domain, provider boundary, normalization tests, and a minimal PostgreSQL/Drizzle persistence shape described in `docs/phase-1.md`. Do not add real sports APIs, authentication, live-score infrastructure, WebSockets, queues, workers, Redis, or Phase 2 tennis integration.
+Phase 1 is complete. Phase 2 is a constrained Live Tennis API Free integration described in `docs/phase-2.md`. The committed work includes the server-only client/decoders, reviewed US Open registry, pure normalizer, atomic canonical writer, and the first quota/lease schema and repository checkpoints. The product still starts in mock mode, and no real provider data reaches the UI yet.
+
+### Immediate Claude starting point
+
+Continue #38 from the committed `main` branch. `src/application/refresh-policy.ts` contains the 80-call UTC-day policy and free-tier intervals; `src/db/refresh-repository.ts` implements transaction-backed lease acquisition, completion, and failure release; `drizzle/0001_aromatic_trauma.sql` adds the two required state tables. Add a synthetic Drizzle transaction harness that proves quota reservation, one concurrent lease owner, token-checked release, and accepted/failure state transitions. Do not wire this repository into a route or call Live Tennis from product runtime until #39.
+
+For #32 evidence, WTA live is now observed. Raw captures remain solely in ignored `.local/provider-samples/`. The feasibility gate remains open for the ten-change series, a real tiebreak, and exceptional states. Never commit raw responses or use them as test fixtures.
 
 The supported sports are men's soccer, unified ATP/WTA tennis, MLB, and NFL. The primary followed destinations are For You, ATP/WTA, Tottenham, Red Sox, Diamondbacks, Premier League, and NFL. A combined US Open experience is part of the prototype. Do not introduce separate top-level men's and women's tennis destinations.
 
@@ -187,18 +193,18 @@ Use strict TypeScript, existing dependencies, and clear component boundaries. Ke
 - Theme, follow order, and follows are device-local prototype preferences only.
 - Existing routes, browser history behavior, accessibility labels, safe-area support, and deterministic dates are part of the product surface. Preserve them unless the task explicitly changes them.
 
-### Claude implementation workflow
+### Claude continuation workflow
 
 1. Work on one numbered checklist item or one explicitly bounded subtask at a time.
-2. Read the relevant component, data types, styles, tests, and the related section of `prompt.md` before editing.
+2. Read the related checklist item, `docs/phase-2.md`, `docs/phase-2-provider-evaluation.md`, and the affected types/tests before editing.
 3. State the files you will touch and the exact behavior you are implementing.
 4. Make the smallest coherent change. Do not refactor unrelated code or redesign adjacent screens.
 5. Keep visible copy specific to the sports task and avoid evaluator-facing language.
-6. Run `npm run typecheck`, `npm run lint`, and `npm test` after implementation. Run `npm run build` for any cross-component or metadata change.
+6. Run `npm run typecheck`, `npm run lint`, `npm test`, and `npm run db:check` after implementation. Run `npm run build` for any runtime, route, schema, or cross-component change.
 7. Inspect `git diff`, fix errors introduced by the change, and commit with a focused message.
 8. Report the commit, files changed, checks run, and any product question that requires Codex judgment.
 
-Codex owns product interpretation, information hierarchy, cross-screen behavior, architecture, scope decisions, and final acceptance. If a task requires deciding what Slate should prioritize rather than how an already-decided behavior should be implemented, stop and leave that decision for Codex.
+Claude owns the remaining implementation, review, and acceptance work for this handoff. Preserve the recorded architecture and scope boundaries; if a task would require a second provider, a paid commitment, a new sport, authentication, or background infrastructure, document the blocker and stop before expanding scope.
 
 ### Claude-first tranche details
 
