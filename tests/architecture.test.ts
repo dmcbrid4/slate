@@ -22,7 +22,7 @@ const allowedExternalDependencies: Readonly<Record<Layer, ReadonlySet<string>>> 
   'read-models': new Set(),
   application: new Set(),
   providers: new Set(['server-only']),
-  db: new Set(['drizzle-orm', 'drizzle-orm/pg-core']),
+  db: new Set(['drizzle-orm', 'drizzle-orm/pg-core', 'drizzle-orm/postgres-js', 'postgres']),
 };
 
 function sourceFiles(directory: string): readonly string[] {

@@ -12,11 +12,13 @@
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "provider:spike": "node --experimental-strip-types scripts/live-tennis-spike.ts",
     "db:generate": "drizzle-kit generate",
-    "db:check": "drizzle-kit check"
+    "db:check": "drizzle-kit check",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
     "next": "^16.2.0",
+    "postgres": "^3.4.9",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "server-only": "^0.0.1"
