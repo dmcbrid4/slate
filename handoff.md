@@ -56,7 +56,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - Implement only the cases specified in `docs/providers.md` and `docs/phase-1.md`; do not invent provider behavior.
 27. [x] Drizzle/PostgreSQL schema and initial migration — Codex, GPT-5.6 Sol / high reasoning
     - Claude may perform a fully specified mechanical migration step using GPT-5.6 Terra / medium reasoning.
-28. [ ] Repository and server read boundary — Codex, GPT-5.6 Sol / high reasoning
+28. [x] Repository and server read boundary — Codex, GPT-5.6 Sol / high reasoning
 29. [ ] Phase 1 architecture audit — Codex, GPT-6 Astra / high reasoning if allowance permits; otherwise GPT-5.6 Sol / high reasoning
 30. [ ] Phase 1 validation and handoff — Codex, GPT-5.6 Sol / high reasoning
 
@@ -73,6 +73,8 @@ Task #25 established the provider boundary without selecting or calling a real s
 Task #26 completed that matrix in `tests/mock-provider.test.ts`. It now proves malformed and unknown values reject at the decoder/normalizer boundary; every mock status maps to its canonical counterpart; repeated observations reuse mappings and write each canonical identity once; sport-specific state stays discriminated; optional baseball live fields stay absent and issue structured warnings; and only strictly newer observation timestamps qualify to replace stored state. A source-level boundary check prevents mock-provider types from leaking into domain, read-model, component, or App Router files.
 
 Task #27 added the explicit PostgreSQL/Drizzle persistence shape in `src/db/schema.ts` and generated the initial SQL migration plus Drizzle snapshot under `drizzle/`. The 12 approved canonical tables enforce sport consistency, season ownership, event-participant identity, ordered follows, polymorphic target integrity, and provider external identity. Common event fields use columns while the sport-specific discriminated state remains JSONB with a minimal shape check; provider observation time remains separate from event start time. Focused tests inspect both Drizzle metadata and generated SQL. No database connection, driver, seed writer, or runtime repository was added, so the existing mock prototype still runs without PostgreSQL; task #28 owns the repository and server read boundary.
+
+Task #28 added the `ScoreboardRepository` contract, an in-memory canonical implementation, and a Drizzle/PostgreSQL reader that hydrates database rows into a validated `DomainGraph`. A server-only application boundary projects those records into a plain serializable scoreboard catalog and precomputes canonical follow-target matches. `app/page.tsx` now loads that catalog as a Server Component and passes only the component-facing DTO into `SlateApp`; client-side date changes, device-local follow ordering, deduplication, event details, and hash navigation continue to use the same interaction model. The mock repository remains the default, so `npm run dev` still requires no database. A database driver and connection configuration must be deliberately supplied before selecting the Drizzle repository. Tests cover serializability, all sport projections, target provenance, owner scoping, row hydration, invalid polymorphic rows, client-boundary imports, and existing Phase 0 behavior.
 
 ## Tasks 6–17 summary
 

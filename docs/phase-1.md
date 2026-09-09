@@ -1,5 +1,7 @@
 # Phase 1 — canonical domain model
 
+Status: implementation steps 1–7 are complete. The remaining work is the bounded architecture audit and final validation.
+
 ## Goal
 
 Replace the temporary Phase 0 data shape with a provider-independent domain and persistence boundary while preserving the proven mobile product experience. Phase 1 ends when mock data flows through the same normalization and read-model seams that a future provider will use.

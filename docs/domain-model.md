@@ -1,6 +1,6 @@
 # Slate canonical domain model
 
-Status: Phase 1 implementation through task #27. Canonical primitives, invariants, seed data, scoreboard projection, derived relevance, provider normalization, and the initial PostgreSQL schema are implemented.
+Status: Phase 1 implementation through task #28. Canonical primitives, invariants, seed data, scoreboard projection, derived relevance, provider normalization, PostgreSQL persistence, and the server read boundary are implemented.
 
 ## Purpose
 
@@ -268,7 +268,15 @@ Three storage choices make the TypeScript invariants enforceable in PostgreSQL:
 - Collection members, follows, and provider mappings store a target discriminator plus nullable foreign-key columns. Check constraints require exactly one target column and require it to agree with the discriminator.
 - Events use composite foreign keys to require their competition to share the event sport and their season to belong to the event competition. A JSONB check also requires the minimal state marker for the event sport.
 
-The schema and migration can be inspected without a running database using `npm run db:check`. Database connection configuration and repository execution are deferred to task #28, so the local mock prototype remains runnable with no PostgreSQL service.
+The schema and migration can be inspected without a running database using `npm run db:check`.
+
+## Repository and server read boundary
+
+`ScoreboardRepository` is the application-facing read contract. Its in-memory implementation keeps the local prototype self-contained. Its Drizzle implementation queries the canonical tables, limits Follows to the requested seeded owner, converts nullable storage columns back into discriminated domain targets, normalizes database timestamps, and runs the complete domain graph validation before returning records.
+
+The server data-access module selects the in-memory implementation by default and builds a plain `ScoreboardData` DTO. Projection and follow-target expansion happen before the React server/client boundary. The DTO contains sport-specific score-card records and the canonical targets each event matches; it contains no Drizzle rows, provider payloads, mappings, or Maps. This lets the client apply the viewer's timezone and device-local follow order without importing the canonical seed or database modules.
+
+`app/page.tsx` is the server entry point and passes the DTO into the interactive `SlateApp` client subtree. The boundary is marked with `server-only`, and a source-level test prevents client modules from importing the seed, Drizzle, or server data access. The default remains deterministic mock startup with no PostgreSQL service. A later database-backed run can construct a supported Drizzle client and inject `createDrizzleScoreboardRepository`; connection selection, credentials, and production deployment remain deliberately unconfigured.
 
 ## Required invariants
 
