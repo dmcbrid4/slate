@@ -17,8 +17,7 @@ export async function fetchMlbSchedule(startDate: string, endDate: string): Prom
   url.searchParams.set('startDate', startDate);
   url.searchParams.set('endDate', endDate);
   url.searchParams.set('hydrate', 'team,linescore,probablePitcher');
-  const response = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } });
+  const response = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(8_000) });
   if (!response.ok) throw new MlbHttpError(response.status);
   return response.json() as Promise<unknown>;
 }
-
