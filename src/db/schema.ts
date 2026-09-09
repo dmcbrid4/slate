@@ -26,6 +26,7 @@ export const eventResultEnum = pgEnum('event_result', ['win', 'loss', 'draw']);
 export const collectionTargetTypeEnum = pgEnum('collection_target_type', ['participant', 'competition', 'competition_group']);
 export const followTargetTypeEnum = pgEnum('follow_target_type', ['participant', 'competition', 'competition_group', 'collection']);
 export const providerCanonicalTypeEnum = pgEnum('provider_canonical_type', ['participant', 'competition', 'competition_group', 'season', 'event']);
+export const providerRefreshResourceEnum = pgEnum('provider_refresh_resource', ['live_matches', 'upcoming_matches', 'fixtures', 'tournaments']);
 
 const canonicalIdPattern = sql.raw("'^[a-z0-9]+(-[a-z0-9]+)*$'");
 
@@ -239,6 +240,34 @@ export const providerEntityMappings = pgTable('provider_entity_mappings', {
     (${table.canonicalType} = 'season' and ${table.participantId} is null and ${table.competitionId} is null and ${table.competitionGroupId} is null and ${table.seasonId} is not null and ${table.eventId} is null) or
     (${table.canonicalType} = 'event' and ${table.participantId} is null and ${table.competitionId} is null and ${table.competitionGroupId} is null and ${table.seasonId} is null and ${table.eventId} is not null)
   `),
+]);
+
+/** Shared request-driven refresh state. A lease is deliberately short-lived;
+ * there are no background workers or browser-to-provider connections. */
+export const providerDailyBudgets = pgTable('provider_daily_budgets', {
+  providerId: text('provider_id').notNull().references(() => providers.id),
+  day: date('day', { mode: 'string' }).notNull(),
+  calls: integer('calls').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).notNull(),
+}, table => [
+  primaryKey({ name: 'provider_daily_budgets_pk', columns: [table.providerId, table.day] }),
+  check('provider_daily_budgets_calls', sql`${table.calls} >= 0`),
+]);
+
+export const providerSyncStates = pgTable('provider_sync_states', {
+  providerId: text('provider_id').notNull().references(() => providers.id),
+  resource: providerRefreshResourceEnum('resource').notNull(),
+  nextRefreshAt: timestamp('next_refresh_at', { withTimezone: true, mode: 'string' }).notNull(),
+  leaseToken: text('lease_token'),
+  leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true, mode: 'string' }),
+  lastAcceptedAt: timestamp('last_accepted_at', { withTimezone: true, mode: 'string' }),
+  lastProviderObservedAt: timestamp('last_provider_observed_at', { withTimezone: true, mode: 'string' }),
+  lastFailureCode: text('last_failure_code'),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).notNull(),
+}, table => [
+  primaryKey({ name: 'provider_sync_states_pk', columns: [table.providerId, table.resource] }),
+  index('provider_sync_states_due_idx').on(table.nextRefreshAt),
+  check('provider_sync_states_lease_pair', sql`(${table.leaseToken} is null and ${table.leaseExpiresAt} is null) or (${table.leaseToken} is not null and ${table.leaseExpiresAt} is not null)`),
 ]);
 
 export const follows = pgTable('follows', {
