@@ -1,6 +1,6 @@
 # Provider boundary
 
-Status: Phase 1 architecture decision. No real provider is selected or integrated in this phase.
+Status: Phase 1 architecture decision implemented through task #25. No real provider is selected or integrated in this phase.
 
 ## Required flow
 
@@ -92,6 +92,8 @@ Phase 1 should prove the boundary with a small mock-provider payload kept separa
 
 The mock adapter is a contract test fixture. It is not a disguised real provider integration and must not invent an external vendor's fields.
 
+The implementation lives under `src/providers/mock`. Its `slateKey` is an explicit deterministic identity policy available only to this invented adapter; it is not part of the provider-neutral contracts and does not imply that a real vendor supplies Slate IDs. Existing `ProviderEntityMapping` records always take precedence. The normalizer is pure: it performs no fetches and no writes, and returns one observation-stamped batch for a future repository transaction.
+
 ## Boundary tests
 
 Tests must prove:
@@ -109,4 +111,3 @@ Tests must prove:
 ## Deferred provider work
 
 Phase 1 does not choose a vendor, call a sports API, set polling frequency, add secrets, or implement caching infrastructure. Provider research and the first real tennis adapter begin only after the canonical model, mock normalizer, persistence shape, and boundary tests pass review.
-
