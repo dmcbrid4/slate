@@ -1,16 +1,13 @@
-import { createRelevanceResolver } from '../application/relevance.ts';
-import type { EventRelevance } from '../application/relevance.ts';
-import { followId } from '../domain/ids.ts';
+import type { EventRelevance, FollowMatch } from '../application/relevance.ts';
+import { followId, ownerId } from '../domain/ids.ts';
 import type { Follow, FollowTarget } from '../domain/model.ts';
 import type { Day } from './types.ts';
 import { dateKey, selectedDate } from '../lib/scores.ts';
-import { projectScoreboardEvents } from '../read-models/project-scoreboard.ts';
+import { scoreboardTargetMatches, type ScoreboardData, type ScoreboardEventRecord } from '../read-models/scoreboard-data.ts';
 import type { ScoreboardEvent } from '../read-models/scoreboard.ts';
-import { CANONICAL_DEMO_NOW, canonicalScoreboardPresentation, canonicalSeed, LOCAL_PRIMARY_OWNER_ID } from './canonical-seed.ts';
 import { sameFollowTarget, targetForDestination } from './destination-targets.ts';
 
-export const DEMO_NOW = CANONICAL_DEMO_NOW;
-export const scoreboardEvents = projectScoreboardEvents(canonicalSeed, canonicalScoreboardPresentation);
+const DEVICE_OWNER_ID = ownerId('local-primary');
 
 export type RelevantScoreboardEvent = ScoreboardEvent & {
   readonly relevance: EventRelevance;
@@ -19,7 +16,7 @@ export type RelevantScoreboardEvent = ScoreboardEvent & {
 function deviceFollows(destinationIds: readonly string[]): readonly Follow[] {
   return destinationIds.flatMap((destinationId, position) => {
     const target = targetForDestination(destinationId);
-    return target ? [{ id: followId(`follow-${destinationId}`), ownerId: LOCAL_PRIMARY_OWNER_ID, target, position }] : [];
+    return target ? [{ id: followId(`follow-${destinationId}`), ownerId: DEVICE_OWNER_ID, target, position }] : [];
   });
 }
 
@@ -27,29 +24,36 @@ function withRelevance<T extends ScoreboardEvent>(event: T, relevance: RelevantS
   return { ...event, relevance };
 }
 
+function relevanceForRecord(record: ScoreboardEventRecord, follows: readonly Follow[]): EventRelevance {
+  const matches = follows.flatMap((follow): readonly FollowMatch[] => {
+    const match = record.targetMatches.find(candidate => scoreboardTargetMatches(candidate, follow.target));
+    return match ? [{ followId: follow.id, target: follow.target, ...(match.via ? { via: match.via } : {}) }] : [];
+  });
+  const primaryMatch = matches.find(match => match.target.type === 'participant') ?? matches[0];
+  return { eventId: record.eventId, matches, ...(primaryMatch ? { primaryMatch } : {}) };
+}
+
 export function selectScoreboardEvents(
+  data: ScoreboardData,
   destinationId: string,
   followingDestinationIds: readonly string[],
   day: Day,
   timeZone: string,
-  now = DEMO_NOW,
+  now = data.asOf,
 ): readonly RelevantScoreboardEvent[] {
   const follows = deviceFollows(followingDestinationIds);
-  const resolver = createRelevanceResolver(canonicalSeed);
   const destination = destinationId === 'for-you' ? undefined : targetForDestination(destinationId);
   if (destinationId !== 'for-you' && !destination) return [];
   const targetDate = selectedDate(now, day, timeZone);
-  const projectedById = new Map(scoreboardEvents.map(event => [event.id, event]));
 
-  return canonicalSeed.events.flatMap(event => {
-    if (dateKey(event.startsAt, timeZone) !== targetDate) return [];
-    const relevance = resolver.relevanceForEvent(event, follows);
+  return data.records.flatMap(record => {
+    if (dateKey(record.event.start, timeZone) !== targetDate) return [];
+    const relevance = relevanceForRecord(record, follows);
     const relevant = destination === undefined
       ? relevance.matches.length > 0
-      : resolver.targetMatchesEvent(event, destination);
+      : record.targetMatches.some(candidate => scoreboardTargetMatches(candidate, destination));
     if (!relevant) return [];
-    const projected = projectedById.get(event.id);
-    return projected ? [withRelevance(projected, relevance)] : [];
+    return [withRelevance(record.event, relevance)];
   }).sort((left, right) => {
     if (destinationId === 'for-you') {
       const personal = Number(isPersonal(right)) - Number(isPersonal(left));

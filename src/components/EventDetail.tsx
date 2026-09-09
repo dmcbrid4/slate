@@ -1,5 +1,5 @@
-import { scoreboardEvents } from '@/data/scoreboard';
 import type { BaseballScoreboardEvent, FootballScoreboardEvent, ScoreboardEvent } from '@/read-models/scoreboard';
+import type { ScoreboardData } from '@/read-models/scoreboard-data';
 import { formatTime } from '@/lib/scores';
 import { Icon } from './Icon';
 import { Status, SportScore } from './ScoreCard';
@@ -20,8 +20,8 @@ function SportDetail({ event }: { event: ScoreboardEvent }) {
   }
 }
 
-export function EventDetail({ id, from, timeZone }: { id: string; from: string; timeZone: string }) {
-  const event = scoreboardEvents.find(item => item.id === id);
+export function EventDetail({ data, id, from, timeZone }: { data: ScoreboardData; id: string; from: string; timeZone: string }) {
+  const event = data.records.find(record => record.eventId === id)?.event;
   if (!event) return <><a className="back-link" href={`#${from}`}><Icon name="back" size={18}/>Back to scores</a><div className="empty-state"><Icon name="scores" size={32}/><h1>Event not found</h1><p>This event isn’t available. It may have moved or the link may be out of date.</p><a className="button-primary" href={`#${from}`}>Back to scores<Icon name="arrow" size={16}/></a></div></>;
   return <>
     <a className="back-link" href={`#${from}`}><Icon name="back" size={18}/>Back to scores</a>

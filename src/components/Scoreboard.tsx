@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { entities, entityById } from '@/data/entities';
-import { DEMO_NOW, eventMatchesFollowDestination, isPersonal, selectScoreboardEvents, type RelevantScoreboardEvent } from '@/data/scoreboard';
+import { eventMatchesFollowDestination, isPersonal, selectScoreboardEvents, type RelevantScoreboardEvent } from '@/data/scoreboard';
 import type { Day } from '@/data/types';
 import { days, formatDay, formatFullDay, selectedDate, swipeDestination, timezoneLabel } from '@/lib/scores';
+import type { ScoreboardData } from '@/read-models/scoreboard-data';
 import { Icon } from './Icon';
 import { Mark, ScoreCard } from './ScoreCard';
 
 const courtOrder = ['Arthur Ashe Stadium', 'Louis Armstrong Stadium'];
 const courtRank = (court: string) => { const i = courtOrder.indexOf(court); return i === -1 ? courtOrder.length : i; };
 
-export function DateNav({ day, destination, timeZone }: { day: Day; destination: string; timeZone: string }) {
+export function DateNav({ day, destination, timeZone, asOf }: { day: Day; destination: string; timeZone: string; asOf: string }) {
   return <nav className="date-nav" aria-label="Scoreboard date">{days.map(item => {
-    const date = selectedDate(DEMO_NOW, item, timeZone);
+    const date = selectedDate(asOf, item, timeZone);
     const label = item[0].toUpperCase() + item.slice(1);
     const classes = [day === item ? 'selected' : '', item === 'today' ? 'calendar-today' : ''].filter(Boolean).join(' ');
     return <a href={`#/scores/${destination}/${item}`} className={classes} aria-label={`${label}, ${formatFullDay(date)}`} aria-current={day === item ? 'date' : undefined} key={item}>
@@ -28,11 +29,11 @@ function EventGroup({ title, subtitle, events, timeZone, from, tournament = fals
   </section>;
 }
 
-export function Scoreboard({ destination, day, following, timeZone, onToggleFollow }: { destination: string; day: Day; following: string[]; timeZone: string; onToggleFollow: (id: string) => void }) {
+export function Scoreboard({ data, destination, day, following, timeZone, onToggleFollow }: { data: ScoreboardData; destination: string; day: Day; following: string[]; timeZone: string; onToggleFollow: (id: string) => void }) {
   const [category, setCategory] = useState('All');
   const touch = useRef<{ x: number; y: number } | null>(null);
   const from = `/scores/${destination}/${day}`;
-  const events = selectScoreboardEvents(destination, following, day, timeZone, DEMO_NOW);
+  const events = selectScoreboardEvents(data, destination, following, day, timeZone);
   const personal = events.filter(isPersonal);
   const rest = events.filter(event => !isPersonal(event));
   const usedRest = new Set<string>();
@@ -48,7 +49,7 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
   const entity = entityById[destination];
   const tennis = entity?.sport === 'tennis';
   const tournament = destination === 'us-open';
-  const activeDate = selectedDate(DEMO_NOW, day, timeZone);
+  const activeDate = selectedDate(data.asOf, day, timeZone);
   const visible = events.filter(event => category === 'All' || event.sport !== 'tennis' || event.category === category);
   const liveCount = events.filter(event => event.status === 'live').length;
   const startSwipe = (x: number, y: number, touchCount: number) => {
@@ -82,8 +83,8 @@ export function Scoreboard({ destination, day, following, timeZone, onToggleFoll
     <div className="page-heading"><div><p className="eyebrow"><time dateTime={activeDate}>{formatDay(activeDate, true)}</time></p><h1>{destination === 'for-you' ? 'For You' : entity?.name ?? 'Scores'}{tournament && <span className="title-detail">New York · Grand Slam</span>}</h1></div>
       {entity && !following.includes(destination) ? <button className="follow-button" onClick={() => onToggleFollow(destination)}><Icon name="plus" size={16}/>Follow</button> : liveCount > 0 && <span className="live-count" aria-label={`${liveCount} live ${liveCount === 1 ? 'event' : 'events'}`}><i/>{liveCount} live</span>}
     </div>
-    <DateNav day={day} destination={destination} timeZone={timeZone}/>
-    <div className="day-meta"><span>{events.length} {events.length === 1 ? 'event' : 'events'}{destination === 'for-you' ? ' across your follows' : ''}</span><span>All times {timezoneLabel(timeZone, DEMO_NOW)}</span></div>
+    <DateNav day={day} destination={destination} timeZone={timeZone} asOf={data.asOf}/>
+    <div className="day-meta"><span>{events.length} {events.length === 1 ? 'event' : 'events'}{destination === 'for-you' ? ' across your follows' : ''}</span><span>All times {timezoneLabel(timeZone, data.asOf)}</span></div>
     <div className="scoreboard-body">
       {tennis && <>
         {!tournament && <a href={`#/scores/us-open/${day}`} className="tournament-banner"><span className="tournament-mark"><Icon name="ball" size={29}/></span><span><strong>US Open</strong><small>New York · Grand Slam · Hard court</small></span><Icon name="chevron" size={18}/></a>}

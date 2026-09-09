@@ -17,3 +17,10 @@ export interface ScoreboardData {
   readonly asOf: string;
   readonly records: readonly ScoreboardEventRecord[];
 }
+
+export function scoreboardTargetMatches(
+  candidate: ScoreboardTargetMatch,
+  target: FollowTarget,
+): boolean {
+  return candidate.target.type === target.type && candidate.target.id === target.id;
+}

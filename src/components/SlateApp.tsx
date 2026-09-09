@@ -5,6 +5,7 @@ import { defaultFollowing, entityById } from '@/data/entities';
 import { DEFAULT_SCORE_ROUTE, parseScoreRoute } from '@/lib/navigation';
 import { parsePreferences, STORAGE_KEY, type Preferences } from '@/lib/preferences';
 import { reorderFollowing } from '@/lib/scores';
+import type { ScoreboardData } from '@/read-models/scoreboard-data';
 import { Search, Following } from './Discovery';
 import { EventDetail } from './EventDetail';
 import { BrandMark, Icon, type IconName } from './Icon';
@@ -49,7 +50,7 @@ const nav: { id: string; label: string; icon: IconName }[] = [
   { id: 'following', label: 'Following', icon: 'following' },
 ];
 
-export function SlateApp() {
+export function SlateApp({ scoreboardData }: { scoreboardData: ScoreboardData }) {
   const route = useSyncExternalStore(subscribeRoute, () => window.location.hash.slice(1) || DEFAULT_SCORE_ROUTE, () => DEFAULT_SCORE_ROUTE);
   const raw = useSyncExternalStore(subscribePreferences, readPreferences, () => null);
   const preferences = useMemo(() => parsePreferences(raw), [raw]);
@@ -101,8 +102,8 @@ export function SlateApp() {
       {storageWarning && <p className="storage-warning" role="status"><strong>Storage unavailable.</strong> Your changes will only last for this visit — avoid closing this tab if you want to keep them.</p>}
       {view === 'search' ? <Search following={preferences.following} onToggle={toggleFollow}/>
       : view === 'following' ? <Following following={preferences.following} onToggle={toggleFollow} onMove={move} onReset={() => { save({ ...preferences, following: defaultFollowing }); setNotice('Starter follows restored.'); }}/>
-      : view === 'event' ? <EventDetail id={id} from={from} timeZone={timeZone}/>
-      : <Scoreboard key={destination} destination={destination} day={day} following={preferences.following} timeZone={timeZone} onToggleFollow={toggleFollow}/>}
+      : view === 'event' ? <EventDetail data={scoreboardData} id={id} from={from} timeZone={timeZone}/>
+      : <Scoreboard data={scoreboardData} key={destination} destination={destination} day={day} following={preferences.following} timeZone={timeZone} onToggleFollow={toggleFollow}/>}
       <footer className="prototype-footer"><BrandMark/><span>Phase 0 · Fictionalized September 2026 slate</span></footer>
     </main>
     <div className="sr-only" role="status" aria-live="polite">{notice}</div>

@@ -12,6 +12,8 @@ export interface BuildScoreboardDataOptions {
   readonly asOf: string;
 }
 
+export type ProjectScoreboardDataOptions = Omit<BuildScoreboardDataOptions, 'repository' | 'ownerId'>;
+
 function followTargets(graph: DomainGraph): readonly FollowTarget[] {
   return [
     ...graph.participants.map(({ id }) => ({ type: 'participant' as const, id })),
@@ -21,8 +23,10 @@ function followTargets(graph: DomainGraph): readonly FollowTarget[] {
   ];
 }
 
-export async function buildScoreboardData(options: BuildScoreboardDataOptions): Promise<ScoreboardData> {
-  const graph = await options.repository.readGraph(options.ownerId);
+export function projectScoreboardData(
+  graph: DomainGraph,
+  options: ProjectScoreboardDataOptions,
+): ScoreboardData {
   const resolver = createRelevanceResolver(graph);
   const projectedById = new Map(projectScoreboardEvents(graph, options.presentation).map(event => [event.id, event]));
   const membersByCollection = new Map(graph.collections.map(collection => [
@@ -49,9 +53,7 @@ export async function buildScoreboardData(options: BuildScoreboardDataOptions): 
   };
 }
 
-export function scoreboardTargetMatches(
-  candidate: ScoreboardTargetMatch,
-  target: FollowTarget,
-): boolean {
-  return candidate.target.type === target.type && candidate.target.id === target.id;
+export async function buildScoreboardData(options: BuildScoreboardDataOptions): Promise<ScoreboardData> {
+  const graph = await options.repository.readGraph(options.ownerId);
+  return projectScoreboardData(graph, options);
 }
