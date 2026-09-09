@@ -57,8 +57,10 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 27. [x] Drizzle/PostgreSQL schema and initial migration — Codex, GPT-5.6 Sol / high reasoning
     - Claude may perform a fully specified mechanical migration step using GPT-5.6 Terra / medium reasoning.
 28. [x] Repository and server read boundary — Codex, GPT-5.6 Sol / high reasoning
-29. [ ] Phase 1 architecture audit — Codex, GPT-6 Astra / high reasoning if allowance permits; otherwise GPT-5.6 Sol / high reasoning
+29. [ ] Phase 1 architecture audit — **in progress** — Codex, GPT-5.6 Sol / high reasoning, explicitly approved by the user in place of Astra
+    - Audit provider leakage, sport-switch spread, nullable universal fields, repository layering, the server/client boundary, and Phase 0 UX regressions.
 30. [ ] Phase 1 validation and handoff — Codex, GPT-5.6 Sol / high reasoning
+    - Start only after #29 is complete and any audit corrections are accepted.
 
 Phase 1 implementation must preserve the Phase 0 UX and must not include a real sports provider, auth, polling, queues, Redis, workers, SSE, WebSockets, or Phase 2 tennis integration.
 
