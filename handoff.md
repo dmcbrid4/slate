@@ -78,8 +78,8 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - The reviewed registry maps the verified Live Tennis ATP/WTA US Open IDs to distinct Slate member competitions under one Slate-owned group; the pure normalizer uses fixture `match_id` only to recover a schedule, preserves match lifecycle truth, suppresses final-match point/server fields, and records unknown/excluded records as structured warnings. It remains disconnected from persistence, refresh coordination, and product UI.
 36. [x] Persistence and atomic normalization-write boundary — Codex, GPT-5.6 Sol / high reasoning
     - `NormalizationRepository` now reads persisted provider mappings and accepts canonical batches through one Drizzle transaction. It locks affected event rows, rejects equal/older observations before mutation, upserts canonical rows, replaces affected event participants atomically, and keeps established provider mappings immutable. The existing schema already supplies `events.observed_at`; no migration was needed for this boundary.
-37. [ ] Atomic write, observation-order, and idempotency tests — Claude, GPT-5.6 Terra / high reasoning
-    - Implement the accepted cases after #35 and #36; Codex reviews transaction and identity behavior.
+37. [x] Atomic write, observation-order, and idempotency tests — Claude, GPT-5.6 Terra / high reasoning
+    - Synthetic transaction tests cover lock-first ordering, equal/older observation rejection before canonical mutation, participant replacement, immutable mapping inserts and mapping reads, invalid-batch preflight, and unknown-provider failure. They require no local PostgreSQL service or provider call.
 38. [ ] Free-tier quota and freshness coordinator — Codex, GPT-5.6 Sol / high reasoning
     - Share accepted snapshots and refresh leases through PostgreSQL. Do not add Redis, workers, cron, SSE, or WebSockets.
 39. [ ] Opt-in real tennis scoreboard vertical slice — Codex, GPT-5.6 Sol / high reasoning
