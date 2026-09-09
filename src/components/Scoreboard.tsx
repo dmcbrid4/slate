@@ -11,7 +11,7 @@ import { Mark, ScoreCard } from './ScoreCard';
 export function DateNav({ day, destination, timeZone, asOf }: { day: Day; destination: string; timeZone: string; asOf: string }) {
   return <nav className="date-nav" aria-label="Scoreboard date">{days.map(item => {
     const date = selectedDate(asOf, item, timeZone);
-    const label = dayLabels[item];
+    const label = item === 'yesterday' || item === 'today' || item === 'tomorrow' ? dayLabels[item] : formatDay(date).split(', ')[1];
     const classes = [day === item ? 'selected' : '', item === 'today' ? 'calendar-today' : ''].filter(Boolean).join(' ');
     return <a href={`#/scores/${destination}/${item}`} className={classes} aria-label={`${label}, ${formatFullDay(date)}`} aria-current={day === item ? 'date' : undefined} key={item}>
       <span>{label}</span><time dateTime={date}>{formatDay(date).split(', ')[1]}</time>
