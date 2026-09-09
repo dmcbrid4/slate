@@ -10,7 +10,7 @@ Evidence was captured on September 9, 2026 under the ignored `.local/provider-sa
 
 - The credential reports the `free` tier with 100 requests per day and 30 per minute.
 - ATP and WTA singles filters are accepted on match, fixture, and tournament endpoints.
-- One observed ATP live match supplied sets, per-set games, current points, server, tiebreak state, timestamps, sequence, staleness, and source-count fields.
+- Observed ATP and WTA live matches supplied sets, per-set games, current points, server, timestamps, sequence, and non-tiebreak state. The WTA live match also resolved to the reviewed US Open WTA tournament identity.
 - The same ATP match ID resolved through live listing, match detail, score detail, and its fixture's `match_id`. Its player ID resolved through player detail.
 - A WTA scheduled match resolved through fixture `match_id`, upcoming-match listing, match detail, and player detail.
 - Player detail supplied current official singles ranking position, ranking points, movement, and explicit completeness metadata for the sampled ATP and WTA players.
@@ -28,12 +28,13 @@ Evidence was captured on September 9, 2026 under the ignored `.local/provider-sa
 - Rate-limit headers varied between adjacent requests and are not sufficient by themselves for a durable daily budget. The usage response remains the authoritative preflight input, with conservative local accounting for the current run.
 - Score `sources_count` changed in both directions across observations. Treat it as diagnostic metadata, not a monotonic quality or ordering signal.
 - The completed match retained `points: ["0", "0"]` and a non-null server from its final observation. A completed lifecycle must suppress current-point and server presentation rather than treating those score fields as active play.
+- A WTA live match’s list/detail score and score-detail endpoint briefly disagreed on game/point/server values and sequences. Treat the score endpoint as its own observation with its own freshness timestamp; do not merge fields from adjacent endpoint responses by inference.
 
 ## Live update sample
 
-Four distinct ATP score sequences were observed over approximately three minutes, plus one repeated response. Provider timestamps were roughly 2–24 seconds behind capture time on the distinct responses. The samples demonstrated changing points, a stable server, and the current set appearing as `0–0` once represented in the games arrays.
+Four distinct ATP score sequences were observed over approximately three minutes, plus one repeated response. Provider timestamps were roughly 2–24 seconds behind capture time on the distinct responses. The samples demonstrated changing points, a stable server, and the current set appearing as `0–0` once represented in the games arrays. A later WTA live survey captured a live singles match with score endpoint point/server changes, but it is a single survey observation rather than a temporal WTA change series.
 
-This is promising but below the ten-distinct-change gate. No WTA live payload, tiebreak, retirement, suspension, postponement, cancellation, or walkover was observed. Those states remain unverified rather than inferred from documentation.
+This is promising but below the ten-distinct-change gate. WTA live payload is now observed; tiebreak, retirement, suspension, postponement, cancellation, and walkover remain unobserved. Those states remain unverified rather than inferred from documentation.
 
 ## Provisional decision
 

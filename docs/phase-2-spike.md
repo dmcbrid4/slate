@@ -48,7 +48,7 @@ This also makes three total provider requests.
 Do not mark checklist task #32 complete until authenticated evidence answers each item:
 
 - [x] Free-tier identity and daily usage are confirmed.
-- [ ] ATP live and ATP/WTA upcoming singles are confirmed; WTA live remains unobserved.
+- [x] ATP and WTA live, plus ATP/WTA upcoming singles, are confirmed.
 - [x] Match IDs round-trip across list, detail, and score endpoints when fixture `match_id` is used.
 - [x] A previously observed live match remains readable by ID after completion, allowing known events to reach a final state on Free.
 - [x] Player IDs round-trip from matches and fixtures to player detail.
