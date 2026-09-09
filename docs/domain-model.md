@@ -1,6 +1,6 @@
 # Slate canonical domain model
 
-Status: Phase 1 implementation through task #28. Canonical primitives, invariants, seed data, scoreboard projection, derived relevance, provider normalization, PostgreSQL persistence, and the server read boundary are implemented.
+Status: Phase 1 implementation and architecture audit through task #29. Canonical primitives, invariants, seed data, scoreboard projection, derived relevance, provider normalization, PostgreSQL persistence, and the server read boundary are implemented and audited.
 
 ## Purpose
 
@@ -277,6 +277,8 @@ The schema and migration can be inspected without a running database using `npm 
 The server data-access module selects the in-memory implementation by default and builds a plain `ScoreboardData` DTO. Projection and follow-target expansion happen before the React server/client boundary. The DTO contains sport-specific score-card records and the canonical targets each event matches; it contains no Drizzle rows, provider payloads, mappings, or Maps. This lets the client apply the viewer's timezone and device-local follow order without importing the canonical seed or database modules.
 
 `app/page.tsx` is the server entry point and passes the DTO into the interactive `SlateApp` client subtree. The boundary is marked with `server-only`, and a source-level test prevents client modules from importing the seed, Drizzle, or server data access. The default remains deterministic mock startup with no PostgreSQL service. A later database-backed run can construct a supported Drizzle client and inject `createDrizzleScoreboardRepository`; connection selection, credentials, and production deployment remain deliberately unconfigured.
+
+The [Phase 1 architecture audit](./phase-1-audit.md) confirms these boundaries, records the accepted small-graph tradeoffs, and adds an executable dependency-direction check. Runtime hydration now validates nested JSONB sport state, and presentation overrides are optional so a canonical participant without mock branding still produces a safe read model.
 
 ## Required invariants
 

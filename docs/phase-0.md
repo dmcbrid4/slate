@@ -1,8 +1,10 @@
 # Phase 0 — local mock prototype
 
+Status: complete. This document records the frozen Phase 0 product baseline; current canonical architecture work is documented in [Phase 1](./phase-1.md).
+
 ## Scope and source of truth
 
-Read [the full Slate brief](../prompt.md) before changing product scope. This implementation serves the Phase 0 evaluation loop: yesterday, today, tomorrow, and the next thing you follow. Phase 1 has not started.
+Read [the full Slate brief](../prompt.md) before changing product scope. This implementation established the Phase 0 evaluation loop: yesterday, today, tomorrow, and the next thing you follow.
 
 The original repository contained only a README and the brief. There was no framework, application, test suite, provider integration, or canonical data model to preserve.
 
@@ -48,6 +50,6 @@ The review found no missing core flow. The final Phase 0 correction pass should 
 
 ## Final validation
 
-The bounded corrections review and final validation are complete. Typecheck, ESLint, the 12 deterministic tests, and the production build pass. Browser QA covered For You, ATP/WTA, the combined US Open route, live tennis detail, Search, Following management, and explicit date destinations. The repository remains local-only Phase 0 work; Phase 1 has not started.
+At the Phase 0 checkpoint, the bounded corrections review and final validation were complete. Typecheck, ESLint, the 12 tests then present, and the production build passed. Browser QA covered For You, ATP/WTA, the combined US Open route, live tennis detail, Search, Following management, and explicit date destinations.
 
-The next product decision is whether to begin a separately requested Phase 1. Until then, evaluate the existing prototype on a phone using the checklist above.
+Phase 1 later replaced the runtime fixture path with a canonical mock repository and read-model projection while preserving this product surface. The phone checklist above remains the reference for visual evaluation.

@@ -57,7 +57,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 27. [x] Drizzle/PostgreSQL schema and initial migration — Codex, GPT-5.6 Sol / high reasoning
     - Claude may perform a fully specified mechanical migration step using GPT-5.6 Terra / medium reasoning.
 28. [x] Repository and server read boundary — Codex, GPT-5.6 Sol / high reasoning
-29. [ ] Phase 1 architecture audit — **in progress** — Codex, GPT-5.6 Sol / high reasoning, explicitly approved by the user in place of Astra
+29. [x] Phase 1 architecture audit — Codex, GPT-5.6 Sol / high reasoning, explicitly approved by the user in place of Astra
     - Audit provider leakage, sport-switch spread, nullable universal fields, repository layering, the server/client boundary, and Phase 0 UX regressions.
 30. [ ] Phase 1 validation and handoff — Codex, GPT-5.6 Sol / high reasoning
     - Start only after #29 is complete and any audit corrections are accepted.
@@ -77,6 +77,8 @@ Task #26 completed that matrix in `tests/mock-provider.test.ts`. It now proves m
 Task #27 added the explicit PostgreSQL/Drizzle persistence shape in `src/db/schema.ts` and generated the initial SQL migration plus Drizzle snapshot under `drizzle/`. The 12 approved canonical tables enforce sport consistency, season ownership, event-participant identity, ordered follows, polymorphic target integrity, and provider external identity. Common event fields use columns while the sport-specific discriminated state remains JSONB with a minimal shape check; provider observation time remains separate from event start time. Focused tests inspect both Drizzle metadata and generated SQL. No database connection, driver, seed writer, or runtime repository was added, so the existing mock prototype still runs without PostgreSQL; task #28 owns the repository and server read boundary.
 
 Task #28 added the `ScoreboardRepository` contract, an in-memory canonical implementation, and a Drizzle/PostgreSQL reader that hydrates database rows into a validated `DomainGraph`. A server-only application boundary projects those records into a plain serializable scoreboard catalog and precomputes canonical follow-target matches. `app/page.tsx` now loads that catalog as a Server Component and passes only the component-facing DTO into `SlateApp`; client-side date changes, device-local follow ordering, deduplication, event details, and hash navigation continue to use the same interaction model. The mock repository remains the default, so `npm run dev` still requires no database. A database driver and connection configuration must be deliberately supplied before selecting the Drizzle repository. Tests cover serializability, all sport projections, target provenance, owner scoping, row hydration, invalid polymorphic rows, client-boundary imports, and existing Phase 0 behavior.
+
+Task #29 audited the implemented Phase 1 boundaries using GPT-5.6 Sol with high reasoning, at the user's direction. Provider-specific types remain isolated to the mock adapter; sport branching is limited to validation, normalization, hydration, projection, and sport-specific UI; canonical and read-model events remain discriminated unions; and the server passes only a serializable scoreboard DTO to the client. The audit fixed two concrete gaps: canonical participants without presentation overrides now receive safe name/mark/color fallbacks, and nested JSONB sport state is fully runtime-validated during database hydration. `tests/architecture.test.ts` now enforces the approved dependency directions and walks the client dependency closure. Strict TypeScript, ESLint, 49 tests, Drizzle migration checks, and the production build pass. The complete findings and accepted tradeoffs are recorded in `docs/phase-1-audit.md`. No Phase 2 work or live infrastructure was added.
 
 ## Tasks 6–17 summary
 
@@ -115,14 +117,15 @@ The supported sports are men's soccer, unified ATP/WTA tennis, MLB, and NFL. The
 
 ### Existing architecture
 
-- `app/page.tsx` is the Next.js entry point and renders the client-side Slate experience.
+- `app/page.tsx` is the Next.js Server Component entry point and loads a serializable scoreboard DTO through `src/server/scoreboard.ts`.
+- `src/domain`, `src/application`, `src/providers/mock`, `src/db`, and `src/read-models` contain the audited Phase 1 boundaries.
 - `src/components/SlateApp.tsx` owns hash navigation, theme state, follow state, browser route restoration, and primary navigation.
 - `src/components/Scoreboard.tsx` owns followed rails, Yesterday / Today / Tomorrow controls, swipe behavior, grouping, and scoreboard layout.
 - `src/components/ScoreCard.tsx` owns sport-specific score presentation.
 - `src/components/EventDetail.tsx` owns event detail pages.
 - `src/components/Discovery.tsx` owns Search and Following management.
-- `src/data/entities.ts` and `src/data/fixtures.ts` hold mock data separately from UI components.
-- `src/data/types.ts` contains temporary discriminated fixture types for the prototype. Do not turn them into a canonical production schema.
+- `src/data/canonical-seed.ts` and `src/data/mock-scoreboard-repository.ts` supply the default server-side mock graph. `src/data/fixtures.ts` remains only as a Phase 0 parity oracle in tests.
+- `src/read-models` contains the sport-specific component-facing types. Do not pass canonical records, database rows, or provider payloads into components.
 - `src/lib/scores.ts`, `src/lib/navigation.ts`, and `src/lib/preferences.ts` contain date, relevance, route, gesture, and device-preference helpers.
 - `app/globals.css` contains the shared Slate visual tokens and responsive design system.
 - `tests/scores.test.ts` contains meaningful deterministic tests for feed selection, dates, routes, follows, gestures, storage, and fixture consistency.
@@ -172,10 +175,11 @@ npm run dev
 npm run typecheck
 npm run lint
 npm test
+npm run db:check
 npm run build
 ```
 
-The local app runs at `http://localhost:3000`. The repository is already configured for local-only Phase 0 work. Do not deploy or publish changes unless the user explicitly requests it.
+The local app runs at `http://localhost:3000` using the in-memory canonical repository. No PostgreSQL service or environment configuration is required. Do not deploy or publish changes unless the user explicitly requests it.
 
 ## Routing guide
 
@@ -222,7 +226,7 @@ No product-source files changed for #19. Typecheck, lint, tests, and the product
 
 ## Task 20 final validation and handoff
 
-The final validation pass confirmed the Phase 0 surface against the brief and the implemented routes. `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` all pass. The browser pass verified For You, ATP/WTA, the combined US Open route, a live tennis event detail page, Search, Following management, and explicit date destinations. The working tree is clean, `main` is pushed to `origin/main`, and no Phase 1 work was started.
+At that checkpoint, the final validation pass confirmed the Phase 0 surface against the brief and implemented routes. `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` passed. The browser pass verified For You, ATP/WTA, the combined US Open route, a live tennis event detail page, Search, Following management, and explicit date destinations. Phase 1 began only after this checkpoint.
 
 ## Task 4 acceptance criteria
 

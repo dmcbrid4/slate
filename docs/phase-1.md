@@ -1,6 +1,6 @@
 # Phase 1 — canonical domain model
 
-Status: implementation steps 1–7 are complete. The remaining work is the bounded architecture audit and final validation.
+Status: implementation steps 1–8 and the architecture audit are complete. The remaining work is the separate final validation and handoff.
 
 ## Goal
 
@@ -24,6 +24,7 @@ This phase does not integrate live sports data.
 - Store common Event fields as columns and validated sport state as JSONB initially.
 
 Detailed shapes and invariants live in [domain-model.md](./domain-model.md). Provider contracts live in [providers.md](./providers.md).
+The completed architecture review and accepted tradeoffs are recorded in [phase-1-audit.md](./phase-1-audit.md).
 
 ## Module boundaries
 
@@ -52,6 +53,8 @@ Dependencies point inward: components may depend on read models; application ser
 8. Run an architecture audit for provider leakage, sport-switch spread, nullable universal fields, and Phase 0 UX regressions.
 
 Each step should be a focused commit. Do not combine provider research or a real API integration with Phase 1.
+
+All eight implementation steps are complete. At the user's direction, the final audit used GPT-5.6 Sol with high reasoning in place of the brief's preferred Astra pass.
 
 ## Exit criteria
 
