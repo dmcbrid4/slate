@@ -10,6 +10,7 @@ const UPCOMING_REQUEST_LIMIT = 4;
 const OUTPUT_ROOT = ".local/provider-samples/live-tennis";
 
 type Mode =
+  | { kind: "detail"; matchId: number }
   | { kind: "survey" }
   | { kind: "observe"; matchId: number }
   | { kind: "upcoming" };
@@ -112,13 +113,15 @@ function parseMode(args: string[]): Mode {
     return { kind: "upcoming" };
   }
 
-  if (args.length === 2 && args[0] === "observe") {
+  if (args.length === 2 && (args[0] === "detail" || args[0] === "observe")) {
     const id = Number(args[1]);
-    if (Number.isSafeInteger(id) && id > 0) return { kind: "observe", matchId: id };
+    if (Number.isSafeInteger(id) && id > 0) {
+      return { kind: args[0], matchId: id };
+    }
   }
 
   throw new Error(
-    "Usage: npm run provider:spike -- [survey | upcoming | observe <positive-match-id>]",
+    "Usage: npm run provider:spike -- [survey | upcoming | detail <positive-match-id> | observe <positive-match-id>]",
   );
 }
 
@@ -234,6 +237,8 @@ async function run(): Promise<void> {
 
   if (mode.kind === "observe") {
     await capture("observed-match-score", `/matches/${mode.matchId}/score`);
+  } else if (mode.kind === "detail") {
+    await capture("observed-match-detail", `/matches/${mode.matchId}`);
   } else if (mode.kind === "upcoming") {
     await capture(
       "atp-matches-upcoming-singles",

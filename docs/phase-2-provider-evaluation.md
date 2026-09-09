@@ -14,6 +14,7 @@ Evidence was captured on September 9, 2026 under the ignored `.local/provider-sa
 - Player detail supplied current official singles ranking position, ranking points, movement, and explicit completeness metadata for the sampled ATP and WTA players.
 - The US Open catalogue uses separate stable ATP and WTA tournament IDs (`1217` and `1218`). Both carry `grand_slam`, New York, US, and hard-court metadata, so a reviewed Slate mapping can join them into one competition group without runtime name matching.
 - The explicit `/matches?status=upcoming&tour=…&draw=singles` query returned only `upcoming` rows with the requested tour and draw in both sampled categories.
+- A match first discovered live remained available from its FREE detail endpoint after completion. Its stable ID, participants, tournament, completed lifecycle, and final score remained readable. The free tier can therefore finalize a match Slate already tracks even though it cannot list arbitrary completed matches.
 
 ## Provider quirks the adapter must contain
 
@@ -24,6 +25,7 @@ Evidence was captured on September 9, 2026 under the ignored `.local/provider-sa
 - The provider documentation describes `/usage` as quota-exempt. Across repeated runs, the durable daily counter eventually advanced for the usage checks too. Slate must count every HTTP request against its own 80-call ceiling.
 - Rate-limit headers varied between adjacent requests and are not sufficient by themselves for a durable daily budget. The usage response remains the authoritative preflight input, with conservative local accounting for the current run.
 - Score `sources_count` changed in both directions across observations. Treat it as diagnostic metadata, not a monotonic quality or ordering signal.
+- The completed match retained `points: ["0", "0"]` and a non-null server from its final observation. A completed lifecycle must suppress current-point and server presentation rather than treating those score fields as active play.
 
 ## Live update sample
 
@@ -37,9 +39,10 @@ Live Tennis API Free is viable for continuing to a decoder and normalizer only a
 
 - `/matches?status=live` for live lifecycle and score state;
 - `/matches?status=upcoming` for clean upcoming lifecycle and identity;
+- `/matches/{id}` to refresh and finalize already-known matches, including after they leave the free live listing;
 - `/fixtures` for scheduled UTC time, joined through `match_id` and never trusted as lifecycle truth;
 - `/tournaments` plus reviewed Slate mappings for paired ATP/WTA tournament identity;
 - `/players/{id}` for current player identity and ranking summary;
 - `/usage` plus conservative application accounting for the local daily ceiling.
 
-Do not build a decoder from fixture `id`, trust fixture status, infer missing start times, or treat current player rankings as a full ranking table.
+Do not build a decoder from fixture `id`, trust fixture status, infer missing start times, display final-match point/server fields as live state, or treat current player rankings as a full ranking table. The free feed still cannot discover Yesterday results that Slate did not already observe.

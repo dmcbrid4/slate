@@ -35,6 +35,14 @@ npm run provider:spike -- observe <match-id>
 
 Each observation makes three total provider requests: usage, one score, then usage again. Collect at least ten distinct provider changes over time; repeated identical responses do not count as changes. Do not automate a rapid loop around the free feed.
 
+To verify that a previously discovered match remains readable after a lifecycle change, run:
+
+```sh
+npm run provider:spike -- detail <match-id>
+```
+
+This also makes three total provider requests.
+
 ## Evaluation record
 
 Do not mark checklist task #32 complete until authenticated evidence answers each item:
@@ -42,6 +50,7 @@ Do not mark checklist task #32 complete until authenticated evidence answers eac
 - [x] Free-tier identity and daily usage are confirmed.
 - [ ] ATP live and ATP/WTA upcoming singles are confirmed; WTA live remains unobserved.
 - [x] Match IDs round-trip across list, detail, and score endpoints when fixture `match_id` is used.
+- [x] A previously observed live match remains readable by ID after completion, allowing known events to reach a final state on Free.
 - [x] Player IDs round-trip from matches and fixtures to player detail.
 - [x] ATP and WTA US Open tournament IDs can map to one Slate group.
 - [ ] Sets, games, nullable points, server, and non-tiebreak state were observed; an actual tiebreak remains unobserved.
