@@ -51,6 +51,15 @@ const nav: { id: string; label: string; icon: IconName }[] = [
   { id: 'following', label: 'Following', icon: 'following' },
 ];
 
+function liveSourceLabel(source: NonNullable<ScoreboardData['source']>): string {
+  const labels: Record<NonNullable<ScoreboardData['source']>, string> = {
+    'live-tennis': 'Live Tennis', 'live-mlb': 'Live MLB', 'live-tennis+mlb': 'Live Tennis + MLB',
+    'live-football-data': 'Live Premier League', 'live-tennis+football-data': 'Live Tennis + Premier League',
+    'live-mlb+football-data': 'Live MLB + Premier League', 'live-tennis+mlb+football-data': 'Live Tennis + MLB + Premier League',
+  };
+  return labels[source];
+}
+
 export function SlateApp({ scoreboardData }: { scoreboardData: ScoreboardData }) {
   const route = useSyncExternalStore(subscribeRoute, () => window.location.hash.slice(1) || DEFAULT_SCORE_ROUTE, () => DEFAULT_SCORE_ROUTE);
   const raw = useSyncExternalStore(subscribePreferences, readPreferences, () => null);
@@ -97,7 +106,7 @@ export function SlateApp({ scoreboardData }: { scoreboardData: ScoreboardData })
 
   return <div className="slate-app" data-theme={preferences.theme} onClickCapture={rememberScoreTarget}>
     <a className="skip-link" href="#main-content" onClick={event => { event.preventDefault(); document.getElementById('main-content')?.focus(); }}>Skip to content</a>
-    <header className="app-header"><div className="header-inner"><a className="brand" href="#/scores/for-you/today" aria-label="Slate, For You scores"><BrandMark/><span>slate</span></a><nav className="desktop-nav" aria-label="Main navigation">{navItems}</nav><div className="header-actions">{scoreboardData.source ? <span className="data-status"><i/>{scoreboardData.source === 'live-tennis' ? 'Live Tennis' : scoreboardData.source === 'live-mlb' ? 'Live MLB' : 'Live Tennis + MLB'} <span aria-hidden="true">·</span> updated now</span> : <span className="demo-badge">Mock data</span>}<button className="icon-button theme-toggle" aria-label="Toggle light and dark theme" onClick={toggleTheme}><span className="theme-sun"><Icon name="sun"/></span><span className="theme-moon"><Icon name="moon"/></span></button></div></div></header>
+    <header className="app-header"><div className="header-inner"><a className="brand" href="#/scores/for-you/today" aria-label="Slate, For You scores"><BrandMark/><span>slate</span></a><nav className="desktop-nav" aria-label="Main navigation">{navItems}</nav><div className="header-actions">{scoreboardData.source ? <span className="data-status"><i/>{liveSourceLabel(scoreboardData.source)} <span aria-hidden="true">·</span> updated now</span> : <span className="demo-badge">Mock data</span>}<button className="icon-button theme-toggle" aria-label="Toggle light and dark theme" onClick={toggleTheme}><span className="theme-sun"><Icon name="sun"/></span><span className="theme-moon"><Icon name="moon"/></span></button></div></div></header>
     {view === 'scores' && <div className="rail-container"><FollowRail following={preferences.following} destination={destination} day={day}/></div>}
     <main id="main-content" className={`main-content ${view === 'event' || view === 'player' ? 'event-page' : ''}`} tabIndex={-1}>
       {storageWarning && <p className="storage-warning" role="status"><strong>Storage unavailable.</strong> Your changes will only last for this visit — avoid closing this tab if you want to keep them.</p>}
@@ -106,7 +115,7 @@ export function SlateApp({ scoreboardData }: { scoreboardData: ScoreboardData })
       : view === 'event' ? <EventDetail data={scoreboardData} id={id} from={from} timeZone={timeZone}/>
       : view === 'player' ? <PlayerProfile data={scoreboardData} id={id} from={from} timeZone={timeZone}/>
       : <Scoreboard data={scoreboardData} key={destination} destination={destination} day={day} following={preferences.following} timeZone={timeZone} onToggleFollow={toggleFollow}/>}
-      <footer className="prototype-footer"><BrandMark/><span>Prototype · Fictionalized September 2026 slate</span></footer>
+      <footer className="prototype-footer"><BrandMark/><span>Prototype · Fictionalized September 2026 slate</span>{scoreboardData.source?.includes('football-data') && <span>Football data provided by the Football-Data.org API.</span>}</footer>
     </main>
     <div className="sr-only" role="status" aria-live="polite">{notice}</div>
     <nav className="mobile-nav" aria-label="Main navigation">{navItems}</nav>

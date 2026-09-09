@@ -6,6 +6,8 @@ import { mockScoreboardRepository } from '../data/mock-scoreboard-repository.ts'
 import { getDb } from '../db/client.ts';
 import { getRealTennisGraph, isLiveTennisModeEnabled } from './live-tennis.ts';
 import { getMlbScoreboardData, isMlbModeEnabled } from './mlb.ts';
+import { getFootballDataScoreboardData, isFootballDataModeEnabled } from './football-data.ts';
+import type { ScoreboardData } from '../read-models/scoreboard-data.ts';
 
 async function getMockScoreboardData() {
   return buildScoreboardData({
@@ -33,10 +35,13 @@ async function getRealScoreboardData() {
 
 export async function getInitialScoreboardData() {
   const mockData = await getMockScoreboardData();
-  if (!isLiveTennisModeEnabled()) {
-    if (!isMlbModeEnabled()) return mockData;
-    try { return await getMlbScoreboardData(mockData, new Date().toISOString()); } catch { return mockData; }
-  }
+  const applyOptionalProviders = async (data: ScoreboardData, now: string) => {
+    let current = data;
+    if (isMlbModeEnabled()) { try { current = await getMlbScoreboardData(current, now); } catch {} }
+    if (isFootballDataModeEnabled()) { try { current = await getFootballDataScoreboardData(current, now); } catch {} }
+    return current;
+  };
+  if (!isLiveTennisModeEnabled()) return applyOptionalProviders(mockData, new Date().toISOString());
 
   // `Promise.race` doesn't cancel the loser: if the timeout wins, the real-data promise is still
   // running and will eventually settle on its own. Attach a no-op catch so that later rejection
@@ -50,12 +55,10 @@ export async function getInitialScoreboardData() {
       realData,
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error('real_tennis_timeout')), REAL_TENNIS_TIMEOUT_MS)),
     ]);
-    if (!isMlbModeEnabled()) return data;
-    try { return await getMlbScoreboardData(data, data.asOf); } catch { return data; }
+    return applyOptionalProviders(data, data.asOf);
   } catch {
     // Anything unexpected in the real path (database unreachable, too slow, etc.) must not break
     // the page - fall back to the mock experience rather than a 500 or an indefinite wait.
-    if (!isMlbModeEnabled()) return mockData;
-    try { return await getMlbScoreboardData(mockData, new Date().toISOString()); } catch { return mockData; }
+    return applyOptionalProviders(mockData, new Date().toISOString());
   }
 }

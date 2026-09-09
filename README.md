@@ -17,6 +17,8 @@ Open **http://localhost:3000**. No environment variables, accounts, API keys, or
 
 To opt into the server-side MLB Stats API slice, set `MLB_API_ENABLED=true` in `.env.local`. It requires no key. The slice is limited to schedule and live-score data for the MLB teams represented in Slate and falls back to mock data when the provider is unavailable. See [the MLB Phase 2 record](docs/phase-2-mlb.md).
 
+To opt into the free-tier Premier League slice, set `FOOTBALL_DATA_ENABLED=true` and `FOOTBALL_DATA_API_TOKEN` in `.env.local`. Slate makes one bounded server-side request for the three-day window around the scoreboard date, keeps known followed Premier League teams, and falls back to mock soccer data on errors. This prototype does not poll. See [the football-data.org Phase 2 record](docs/phase-2-football-data.md).
+
 For phone testing, connect your phone and computer to the same Wi-Fi, then open `http://<your-computer-LAN-IP>:3000` on the phone. The dev server listens on all interfaces. Normal browser use works over local HTTP; standalone installation behavior depends on browser and secure-context requirements.
 
 ## Checks

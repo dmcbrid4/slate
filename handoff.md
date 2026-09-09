@@ -340,3 +340,14 @@ At that checkpoint, the final validation pass confirmed the Phase 0 surface agai
 - The event list, event count, heading date, empty-state copy, and event-detail return path all reflect the selected day.
 - Date controls retain usable touch targets and equal widths at the supported mobile sizes and at enlarged text sizes.
 - Horizontal gestures continue to change followed destinations only. Phase 0 adds no date swipe or arbitrary-date picker.
+
+## Task 50: football-data.org free-tier slice (completed)
+
+- Added an opt-in server-side Premier League adapter using `FOOTBALL_DATA_ENABLED` and `FOOTBALL_DATA_API_TOKEN`.
+- The local token is configured in ignored `.env.local`; no credential is committed.
+- Requests use the `X-Auth-Token` header, an eight-second timeout, and one yesterday/today/tomorrow UTC window.
+- Known Premier League clubs map to Slate follows; soccer records retain soccer-specific scores, minutes, and goal events.
+- Empty, malformed, rate-limited, or unavailable responses preserve the mock experience.
+- Added required Football-Data.org attribution when live football data supplies the page.
+- Validation passed: typecheck, lint, 94 tests, production build, and `git diff --check`.
+- Next iteration: inspect the live Premier League response on a matchday and decide whether the team mapping should expand before adding standings or richer match detail.
