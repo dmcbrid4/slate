@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { decodeFootballDataMatches, FootballDataDecodeError } from '../src/providers/football-data/decoder.ts';
 
-const match = (status = 'IN_PLAY') => ({ id: 99, utcDate: '2026-09-09T19:00:00Z', status, minute: '72', venue: 'White Hart Lane', homeTeam: { id: 73, name: 'Tottenham Hotspur', shortName: 'Tottenham', tla: 'TOT' }, awayTeam: { id: 64, name: 'Liverpool', shortName: 'Liverpool', tla: 'LIV' }, score: { fullTime: { home: 2, away: 1 } }, goals: [{ minute: 18, team: { id: 73 }, scorer: { name: 'Solanke' } }] });
+const match = (status = 'IN_PLAY') => ({ id: 99, utcDate: '2026-09-09T19:00:00Z', status, minute: '72', venue: 'White Hart Lane', competition: { code: 'PL' }, homeTeam: { id: 73, name: 'Tottenham Hotspur', shortName: 'Tottenham', tla: 'TOT' }, awayTeam: { id: 64, name: 'Liverpool', shortName: 'Liverpool', tla: 'LIV' }, score: { fullTime: { home: 2, away: 1 } }, goals: [{ minute: 18, team: { id: 73 }, scorer: { name: 'Solanke' } }] });
 
 test('football-data decoder maps status, score, and goals to Slate order', () => {
   const [decoded] = decodeFootballDataMatches({ matches: [match()] });

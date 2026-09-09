@@ -22,6 +22,7 @@ export interface FootballDataGoal {
 
 export interface FootballDataMatch {
   readonly id: number;
+  readonly competition: 'PL' | 'CL';
   readonly utcDate: string;
   readonly status: FootballDataStatus;
   readonly home: FootballDataTeam;
@@ -31,4 +32,3 @@ export interface FootballDataMatch {
   readonly minute?: string;
   readonly goals: readonly FootballDataGoal[];
 }
-

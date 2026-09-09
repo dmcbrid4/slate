@@ -8,6 +8,7 @@ const entries = [
   ['red-sox', { type: 'participant', id: participantId('red-sox') }],
   ['diamondbacks', { type: 'participant', id: participantId('diamondbacks') }],
   ['premier-league', { type: 'competition', id: competitionId('premier-league') }],
+  ['champions-league', { type: 'competition', id: competitionId('champions-league') }],
   ['nfl', { type: 'competition', id: competitionId('nfl') }],
   ['us-open', { type: 'competition_group', id: competitionGroupId('us-open') }],
   ['alcaraz', { type: 'participant', id: participantId('carlos-alcaraz') }],

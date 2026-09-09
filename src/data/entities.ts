@@ -6,6 +6,7 @@ export const entities: Entity[] = [
   { id: 'red-sox', name: 'Boston Red Sox', shortName: 'Red Sox', kind: 'Team', subtitle: 'Baseball · MLB', mark: 'B', color: 'red', sport: 'baseball' },
   { id: 'diamondbacks', name: 'Arizona Diamondbacks', shortName: 'Diamondbacks', kind: 'Team', subtitle: 'Baseball · MLB', mark: 'A', color: 'brick', sport: 'baseball' },
   { id: 'premier-league', name: 'Premier League', shortName: 'Premier League', kind: 'Competition', subtitle: 'Soccer · England', mark: 'PL', color: 'purple', sport: 'soccer' },
+  { id: 'champions-league', name: 'Champions League', shortName: 'Champions League', kind: 'Competition', subtitle: 'Soccer · Europe', mark: 'CL', color: 'blue', sport: 'soccer' },
   { id: 'nfl', name: 'NFL', shortName: 'NFL', kind: 'Competition', subtitle: 'Football · United States', mark: 'NFL', color: 'blue', sport: 'football' },
   { id: 'us-open', name: 'US Open', shortName: 'US Open', kind: 'Tournament', subtitle: 'Tennis · Grand Slam', mark: 'US', color: 'blue', sport: 'tennis' },
   { id: 'alcaraz', name: 'Carlos Alcaraz', shortName: 'Alcaraz', kind: 'Player', subtitle: 'Tennis · ATP · Spain', mark: 'ES', color: 'gold', sport: 'tennis' },
@@ -15,7 +16,7 @@ export const entities: Entity[] = [
   { id: 'bills', name: 'Buffalo Bills', shortName: 'Bills', kind: 'Team', subtitle: 'Football · NFL', mark: 'BUF', color: 'blue', sport: 'football' },
 ];
 
-export const defaultFollowing = ['atp-wta', 'tottenham', 'red-sox', 'diamondbacks', 'premier-league', 'nfl'];
+export const defaultFollowing = ['atp-wta', 'tottenham', 'red-sox', 'diamondbacks', 'premier-league', 'champions-league', 'nfl'];
 export const entityById = Object.fromEntries(entities.map(entity => [entity.id, entity]));
 
 export const participants = {

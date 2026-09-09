@@ -89,6 +89,7 @@ function parseMatch(value: unknown, path: string): FootballDataMatch {
     : undefined;
   return {
     id: integer(item.id, `${path}.id`),
+    competition: (() => { const code = string(record(item.competition, `${path}.competition`).code, `${path}.competition.code`); if (code !== 'PL' && code !== 'CL') throw new FootballDataDecodeError(`${path}.competition.code`, `unsupported competition ${code}`); return code; })(),
     utcDate: string(item.utcDate, `${path}.utcDate`),
     status: status(item.status, `${path}.status`),
     home: team(item.homeTeam, `${path}.homeTeam`),
@@ -104,4 +105,3 @@ export function decodeFootballDataMatches(input: unknown): readonly FootballData
   const payload = record(input, '$');
   return array(payload.matches, '$.matches').map((match, index) => parseMatch(match, `$.matches[${index}]`));
 }
-

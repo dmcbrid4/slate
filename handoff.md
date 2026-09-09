@@ -351,3 +351,9 @@ At that checkpoint, the final validation pass confirmed the Phase 0 surface agai
 - Added required Football-Data.org attribution when live football data supplies the page.
 - Validation passed: typecheck, lint, 94 tests, production build, and `git diff --check`.
 - Next iteration: inspect the live Premier League response on a matchday and decide whether the team mapping should expand before adding standings or richer match detail.
+
+## Task 51: Champions League coverage (completed)
+
+- Added a Champions League destination and included it in the starter follows.
+- The football-data request now fetches `PL,CL` in one bounded call and labels each match by competition.
+- Champions League competition and Tottenham/team target matches use the same soccer card presentation and fallback behavior.

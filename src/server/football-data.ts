@@ -2,7 +2,7 @@ import 'server-only';
 import { participantId, competitionId } from '../domain/ids.ts';
 import type { ScoreboardEventRecord, ScoreboardData, ScoreboardTargetMatch } from '../read-models/scoreboard-data.ts';
 import type { SoccerScoreboardEvent, ScoreboardParticipant } from '../read-models/scoreboard.ts';
-import { fetchPremierLeagueMatches } from '../providers/football-data/client.ts';
+import { fetchFootballMatches } from '../providers/football-data/client.ts';
 import { decodeFootballDataMatches } from '../providers/football-data/decoder.ts';
 import type { FootballDataMatch, FootballDataTeam } from '../providers/football-data/types.ts';
 
@@ -33,7 +33,7 @@ function recordForMatch(match: FootballDataMatch): ScoreboardEventRecord {
   const away = participant(match.away);
   const event: SoccerScoreboardEvent = {
     id: `football-data-match-${match.id}`,
-    sport: 'soccer', competition: 'Premier League', competitionId: 'premier-league', start: match.utcDate,
+    sport: 'soccer', competition: match.competition === 'CL' ? 'Champions League' : 'Premier League', competitionId: match.competition === 'CL' ? 'champions-league' : 'premier-league', start: match.utcDate,
     status: match.status, participants: [home, away], venue: match.venue,
     ...(match.score ? { score: match.score } : {}), ...(match.minute ? { minute: match.minute } : {}),
     goals: match.goals.map(goal => ({ minute: `${goal.minute}${goal.addedTime ? `+${goal.addedTime}` : ''}`, ...(goal.scorer ? { player: goal.scorer } : {}), side: goal.teamId === match.home.id ? 0 : 1 })),
@@ -42,7 +42,7 @@ function recordForMatch(match: FootballDataMatch): ScoreboardEventRecord {
     const known = knownTeams[team.id];
     return known ? [{ target: { type: 'participant' as const, id: participantId(known.id) } }] : [];
   });
-  targetMatches.push({ target: { type: 'competition', id: competitionId('premier-league') } });
+  targetMatches.push({ target: { type: 'competition', id: competitionId(match.competition === 'CL' ? 'champions-league' : 'premier-league') } });
   return { eventId: event.id as ScoreboardEventRecord['eventId'], event, targetMatches };
 }
 
@@ -56,7 +56,7 @@ export async function getFootballDataScoreboardData(data: ScoreboardData, now: s
   const center = new Date(now);
   const start = new Date(center.getTime() - 24 * 60 * 60_000).toISOString();
   const end = new Date(center.getTime() + 48 * 60 * 60_000).toISOString();
-  const payload = await fetchPremierLeagueMatches(datePart(start), datePart(end));
+  const payload = await fetchFootballMatches(datePart(start), datePart(end));
   const matches = decodeFootballDataMatches(payload);
   return matches.length === 0 ? data : mergeFootballDataScoreboardData(data, matches);
 }

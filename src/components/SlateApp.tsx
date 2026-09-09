@@ -54,8 +54,8 @@ const nav: { id: string; label: string; icon: IconName }[] = [
 function liveSourceLabel(source: NonNullable<ScoreboardData['source']>): string {
   const labels: Record<NonNullable<ScoreboardData['source']>, string> = {
     'live-tennis': 'Live Tennis', 'live-mlb': 'Live MLB', 'live-tennis+mlb': 'Live Tennis + MLB',
-    'live-football-data': 'Live Premier League', 'live-tennis+football-data': 'Live Tennis + Premier League',
-    'live-mlb+football-data': 'Live MLB + Premier League', 'live-tennis+mlb+football-data': 'Live Tennis + MLB + Premier League',
+    'live-football-data': 'Live Football', 'live-tennis+football-data': 'Live Tennis + Football',
+    'live-mlb+football-data': 'Live MLB + Football', 'live-tennis+mlb+football-data': 'Live Tennis + MLB + Football',
   };
   return labels[source];
 }
