@@ -101,9 +101,9 @@ export function SportScore({ event }: { event: ScoreboardEvent }) {
   }
 }
 
-export function ScoreCard({ event, timeZone, from }: { event: ScoreboardEvent; timeZone: string; from: string }) {
+export function ScoreCard({ event, timeZone, from, showVenue = false }: { event: ScoreboardEvent; timeZone: string; from: string; showVenue?: boolean }) {
   return <a className={`score-card ${event.sport}`} href={eventHref(event.id, from)}>
-    <div className="card-meta"><span>{event.sport === 'tennis' ? `${event.category}’s singles · ${event.round}` : event.competition}</span><Status event={event} timeZone={timeZone}/></div>
+    <div className="card-meta"><span>{event.sport === 'tennis' ? `${event.category}’s singles · ${showVenue && event.venue ? event.venue : event.round}` : event.competition}</span><Status event={event} timeZone={timeZone}/></div>
     <SportScore event={event}/>
     {event.context && <div className="context"><Icon name="arrow" size={14}/><span>{event.context}</span></div>}
     <span className="sr-only">Open event details</span>

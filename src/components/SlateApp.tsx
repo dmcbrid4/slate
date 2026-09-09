@@ -9,6 +9,7 @@ import type { ScoreboardData } from '@/read-models/scoreboard-data';
 import { Search, Following } from './Discovery';
 import { EventDetail } from './EventDetail';
 import { BrandMark, Icon, type IconName } from './Icon';
+import { PlayerProfile } from './PlayerProfile';
 import { FollowRail, Scoreboard } from './Scoreboard';
 
 let memoryPreferences: string | null = null;
@@ -60,10 +61,10 @@ export function SlateApp({ scoreboardData }: { scoreboardData: ScoreboardData })
   const [lastScores, setLastScores] = useState(DEFAULT_SCORE_ROUTE);
   const [path, query] = route.split('?');
   const [, requestedView = 'scores', id = 'for-you'] = path.split('/');
-  const view = ['scores', 'search', 'following', 'event'].includes(requestedView) ? requestedView : 'scores';
+  const view = ['scores', 'search', 'following', 'event', 'player'].includes(requestedView) ? requestedView : 'scores';
   const scoreRoute = parseScoreRoute(view === 'scores' ? path : undefined) ?? parseScoreRoute(DEFAULT_SCORE_ROUTE)!;
   const { day, destination } = scoreRoute;
-  const activeNav = view === 'event' ? 'scores' : view;
+  const activeNav = view === 'event' || view === 'player' ? 'scores' : view;
   const fromQuery = new URLSearchParams(query).get('from');
   const from = parseScoreRoute(fromQuery)?.path ?? lastScores;
 
@@ -86,7 +87,7 @@ export function SlateApp({ scoreboardData }: { scoreboardData: ScoreboardData })
     const dark = preferences.theme === 'dark' || (preferences.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     save({ ...preferences, theme: dark ? 'light' : 'dark' });
   };
-  const currentScores = view === 'scores' ? scoreRoute.path : view === 'event' ? from : lastScores;
+  const currentScores = view === 'scores' ? scoreRoute.path : view === 'event' || view === 'player' ? from : lastScores;
   const rememberScoreTarget = (event: ReactMouseEvent<HTMLDivElement>) => {
     const href = (event.target as Element).closest('a')?.getAttribute('href');
     const target = parseScoreRoute(href?.startsWith('#') ? href.slice(1) : href);
@@ -98,11 +99,12 @@ export function SlateApp({ scoreboardData }: { scoreboardData: ScoreboardData })
     <a className="skip-link" href="#main-content" onClick={event => { event.preventDefault(); document.getElementById('main-content')?.focus(); }}>Skip to content</a>
     <header className="app-header"><div className="header-inner"><a className="brand" href="#/scores/for-you/today" aria-label="Slate, For You scores"><BrandMark/><span>slate</span></a><nav className="desktop-nav" aria-label="Main navigation">{navItems}</nav><div className="header-actions"><span className="demo-badge">Mock data</span><button className="icon-button theme-toggle" aria-label="Toggle light and dark theme" onClick={toggleTheme}><span className="theme-sun"><Icon name="sun"/></span><span className="theme-moon"><Icon name="moon"/></span></button></div></div></header>
     {view === 'scores' && <div className="rail-container"><FollowRail following={preferences.following} destination={destination} day={day}/></div>}
-    <main id="main-content" className={`main-content ${view === 'event' ? 'event-page' : ''}`} tabIndex={-1}>
+    <main id="main-content" className={`main-content ${view === 'event' || view === 'player' ? 'event-page' : ''}`} tabIndex={-1}>
       {storageWarning && <p className="storage-warning" role="status"><strong>Storage unavailable.</strong> Your changes will only last for this visit — avoid closing this tab if you want to keep them.</p>}
       {view === 'search' ? <Search following={preferences.following} onToggle={toggleFollow}/>
       : view === 'following' ? <Following following={preferences.following} onToggle={toggleFollow} onMove={move} onReset={() => { save({ ...preferences, following: defaultFollowing }); setNotice('Starter follows restored.'); }}/>
       : view === 'event' ? <EventDetail data={scoreboardData} id={id} from={from} timeZone={timeZone}/>
+      : view === 'player' ? <PlayerProfile data={scoreboardData} id={id} from={from} timeZone={timeZone}/>
       : <Scoreboard data={scoreboardData} key={destination} destination={destination} day={day} following={preferences.following} timeZone={timeZone} onToggleFollow={toggleFollow}/>}
       <footer className="prototype-footer"><BrandMark/><span>Prototype · Fictionalized September 2026 slate</span></footer>
     </main>

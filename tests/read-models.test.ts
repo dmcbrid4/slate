@@ -13,8 +13,12 @@ function withoutLegacyFollows() {
 
 function withoutNewFields() {
   return projectScoreboardEvents(canonicalSeed, canonicalScoreboardPresentation).map(event => {
-    if (event.sport !== 'tennis') return event;
-    const { bestOf, ...legacyShape } = event;
+    const participants = event.participants.map(({ id, ...rest }) => {
+      assert.ok(id);
+      return rest;
+    }) as unknown as typeof event.participants;
+    if (event.sport !== 'tennis') return { ...event, participants };
+    const { bestOf, ...legacyShape } = { ...event, participants };
     assert.ok(bestOf === 3 || bestOf === 5);
     return legacyShape;
   });

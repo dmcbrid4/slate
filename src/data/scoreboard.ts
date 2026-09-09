@@ -76,3 +76,45 @@ export function eventMatchesFollowDestination(event: RelevantScoreboardEvent, de
 export function followTargetForDestination(destinationId: string): FollowTarget | undefined {
   return targetForDestination(destinationId);
 }
+
+export function selectParticipantEvents(data: ScoreboardData, participantId: string): readonly ScoreboardEvent[] {
+  return data.records.flatMap(record => record.event.participants.some(participant => participant.id === participantId) ? [record.event] : []);
+}
+
+export interface PlayerSchedule {
+  readonly upcoming: readonly ScoreboardEvent[];
+  readonly recent: readonly ScoreboardEvent[];
+}
+
+export function splitPlayerSchedule(events: readonly ScoreboardEvent[]): PlayerSchedule {
+  const upcoming = events
+    .filter(event => event.status === 'scheduled' || event.status === 'live')
+    .sort((a, b) => (a.status === b.status ? a.start.localeCompare(b.start) : a.status === 'live' ? -1 : 1));
+  const recent = events
+    .filter(event => event.status !== 'scheduled' && event.status !== 'live')
+    .sort((a, b) => b.start.localeCompare(a.start));
+  return { upcoming, recent };
+}
+
+export interface RoundGroup {
+  readonly round: string;
+  readonly events: readonly ScoreboardEvent[];
+}
+
+// Groups are ordered by their earliest match's start time rather than a fixed round-name lookup
+// table: mock and real-provider round strings use different literal formats (mock: 'Quarterfinal';
+// real: 'WTA US Open - Quarter-finals', or the literal 'Scheduled' placeholder when the provider
+// gives neither round nor round code - see src/providers/live-tennis/normalizer.ts). Chronological
+// ordering is robust to either vocabulary without hardcoding either one.
+export function groupByRoundInOrder(events: readonly ScoreboardEvent[]): readonly RoundGroup[] {
+  const byRound = new Map<string, ScoreboardEvent[]>();
+  for (const event of events) {
+    if (event.sport !== 'tennis') continue;
+    const group = byRound.get(event.round);
+    if (group) group.push(event);
+    else byRound.set(event.round, [event]);
+  }
+  return [...byRound.entries()]
+    .map(([round, roundEvents]) => ({ round, events: [...roundEvents].sort((a, b) => a.start.localeCompare(b.start)) }))
+    .sort((a, b) => a.events[0].start.localeCompare(b.events[0].start));
+}

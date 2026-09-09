@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { entities, entityById } from '@/data/entities';
-import { eventMatchesFollowDestination, isPersonal, selectScoreboardEvents, type RelevantScoreboardEvent } from '@/data/scoreboard';
+import { eventMatchesFollowDestination, groupByRoundInOrder, isPersonal, selectScoreboardEvents } from '@/data/scoreboard';
 import type { Day } from '@/data/types';
 import { days, formatDay, formatFullDay, selectedDate, swipeDestination, timezoneLabel } from '@/lib/scores';
+import type { ScoreboardEvent } from '@/read-models/scoreboard';
 import type { ScoreboardData } from '@/read-models/scoreboard-data';
 import { Icon } from './Icon';
 import { Mark, ScoreCard } from './ScoreCard';
-
-const courtOrder = ['Arthur Ashe Stadium', 'Louis Armstrong Stadium'];
-const courtRank = (court: string) => { const i = courtOrder.indexOf(court); return i === -1 ? courtOrder.length : i; };
 
 export function DateNav({ day, destination, timeZone, asOf }: { day: Day; destination: string; timeZone: string; asOf: string }) {
   return <nav className="date-nav" aria-label="Scoreboard date">{days.map(item => {
@@ -21,11 +19,11 @@ export function DateNav({ day, destination, timeZone, asOf }: { day: Day; destin
   })}</nav>;
 }
 
-function EventGroup({ title, subtitle, events, timeZone, from, tournament = false }: { title: string; subtitle?: string; events: readonly RelevantScoreboardEvent[]; timeZone: string; from: string; tournament?: boolean }) {
+export function EventGroup({ title, subtitle, events, timeZone, from, tournament = false, showVenue = false }: { title: string; subtitle?: string; events: readonly ScoreboardEvent[]; timeZone: string; from: string; tournament?: boolean; showVenue?: boolean }) {
   if (!events.length) return null;
   return <section className="event-group">
     <div className="section-heading"><h2>{title}{subtitle && <span>{subtitle}</span>}</h2>{tournament && <a href={`#/scores/us-open/${from.split('/').at(-1)}`} className="quiet-link">Tournament <Icon name="chevron" size={14}/></a>}</div>
-    <div className="event-grid">{events.map(event => <ScoreCard key={event.id} event={event} timeZone={timeZone} from={from}/>)}</div>
+    <div className="event-grid">{events.map(event => <ScoreCard key={event.id} event={event} timeZone={timeZone} from={from} showVenue={showVenue}/>)}</div>
   </section>;
 }
 
@@ -100,7 +98,7 @@ export function Scoreboard({ data, destination, day, following, timeZone, onTogg
           : <EventGroup key={broad.id} title={broad.shortName} subtitle={broad.sport === 'football' ? 'Week 1' : undefined} events={groupEvents} timeZone={timeZone} from={from}/>)}
       </> : tournament ? <>
         <div className="section-heading"><h2>Order of play</h2><span className="secondary">Men + Women</span></div>
-        {[...new Set(visible.map(event => event.venue))].sort((a, b) => courtRank(a) - courtRank(b)).map(court => <EventGroup key={court} title={court} events={visible.filter(event => event.venue === court).sort((a, b) => a.start.localeCompare(b.start))} timeZone={timeZone} from={from}/>)}
+        {groupByRoundInOrder(visible).map(group => <EventGroup key={group.round} title={group.round} events={group.events} timeZone={timeZone} from={from} showVenue/>)}
       </> : <EventGroup title={tennis ? 'Matches' : entity?.kind === 'Team' ? 'Matches' : entity?.name ?? 'Events'} events={visible} timeZone={timeZone} from={from}/>}
       {events.length > 0 && visible.length === 0 && <div className="empty-state"><h2>No {category.toLowerCase()}’s matches {day}</h2><button className="button-primary" onClick={() => setCategory('All')}>Show all matches</button></div>}
       {events.length > 0 && <div className="endnote"><span className="endnote-line"/><span>You’re all caught up</span><span className="endnote-line"/></div>}

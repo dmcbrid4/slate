@@ -86,6 +86,7 @@ export function createScoreboardProjector(graph: DomainGraph, presentation: Scor
   const participantDisplay = (participant: Participant): ScoreboardParticipant => {
     const display = presentation.participants?.get(participant.id);
     return {
+      id: participant.id,
       name: display?.name ?? participant.name,
       short: display?.short ?? participant.shortName,
       mark: display?.mark ?? fallbackMark(participant),

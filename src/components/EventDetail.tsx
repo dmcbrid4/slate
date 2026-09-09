@@ -1,6 +1,6 @@
 import type { BaseballScoreboardEvent, FootballScoreboardEvent, ScoreboardEvent } from '@/read-models/scoreboard';
 import type { ScoreboardData } from '@/read-models/scoreboard-data';
-import { formatTime } from '@/lib/scores';
+import { formatTime, playerHref } from '@/lib/scores';
 import { Icon } from './Icon';
 import { Status, SportScore } from './ScoreCard';
 
@@ -25,7 +25,9 @@ export function EventDetail({ data, id, from, timeZone }: { data: ScoreboardData
   if (!event) return <><a className="back-link" href={`#${from}`}><Icon name="back" size={18}/>Back to scores</a><div className="empty-state"><Icon name="scores" size={32}/><h1>Event not found</h1><p>This event isn’t available. It may have moved or the link may be out of date.</p><a className="button-primary" href={`#${from}`}>Back to scores<Icon name="arrow" size={16}/></a></div></>;
   return <>
     <a className="back-link" href={`#${from}`}><Icon name="back" size={18}/>Back to scores</a>
-    <div className="detail-heading"><p className="eyebrow">{event.competition}{event.sport === 'tennis' ? ` · ${event.round}` : event.sport === 'football' ? ' · Week 1' : ''}</p><h1>{event.participants[0].name} <span>vs</span> {event.participants[1].name}</h1></div>
+    <div className="detail-heading"><p className="eyebrow">{event.competition}{event.sport === 'tennis' ? ` · ${event.round}` : event.sport === 'football' ? ' · Week 1' : ''}</p><h1>{event.sport === 'tennis' ? <>
+      <a href={playerHref(event.participants[0].id, from)}>{event.participants[0].name}</a> <span>vs</span> <a href={playerHref(event.participants[1].id, from)}>{event.participants[1].name}</a>
+    </> : <>{event.participants[0].name} <span>vs</span> {event.participants[1].name}</>}</h1></div>
     <div className={`detail-score score-card ${event.sport}`}><div className="card-meta"><span>{event.sport === 'tennis' ? `${event.category}’s singles` : 'Match center'}</span><Status event={event} timeZone={timeZone}/></div><SportScore event={event}/>{event.context && <div className="context"><Icon name="arrow" size={14}/><span>{event.context}</span></div>}</div>
     <SportDetail event={event}/>
     <section className="detail-section"><h2>Event details</h2><dl className="detail-facts"><div><dt>Venue</dt><dd>{event.venue}</dd></div><div><dt>Start</dt><dd>{new Intl.DateTimeFormat('en-US', { timeZone, month: 'short', day: 'numeric' }).format(new Date(event.start))} · {formatTime(event.start, timeZone)}</dd></div></dl></section>

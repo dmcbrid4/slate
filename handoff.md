@@ -88,7 +88,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - Measure data quality and product value before considering API Tennis, Live Tennis API Pro, or Sportradar production access.
 41. [ ] Tennis-specific ranking and draw domain extensions — Claude, GPT-5.6 Sonnet / high reasoning
     - Finalize records and migrations only after #40 verifies the selected paid source's real semantics.
-42. [ ] Tournament and player read models/routes — Claude, GPT-5.6 Sonnet / high reasoning
+42. [x] Tournament and player read models/routes — Claude, GPT-5.6 Sonnet / high reasoning
     - Preserve combined tournament defaults, history, originating score route, and browser-local date behavior.
 43. [ ] ATP/WTA rankings presentation — Claude, GPT-5.6 Sonnet / medium reasoning
     - Implement the approved read model and UI; do not add ranking algorithms or extra statistics.
@@ -177,7 +177,13 @@ The next task is **#40 — Free-slice validation and paid-capability decision**:
 - **Quota headroom is comfortable.** 17 real app-driven calls against the 80/day budget as of this measurement, with cadence (30 min live / 6h upcoming / 24h fixtures) behaving as designed.
 - **The free tier's actual ceiling is exactly what `docs/phase-2.md` already documented**: no rankings, no draws, and (per the gap above) no reliable path to a final result either. That gap is a bug in our own client typing, not a provider limitation — the provider does support fetching a specific match by ID regardless of status.
 
-The paid-capability decision itself — whether the free tier's real, observed quality is enough to ship on as-is (after the stuck-match fix), or whether it's worth exceeding the $20/month soft ceiling for API Tennis's draws/rankings (or Sportradar) — is for the user.
+The paid-capability decision itself — whether the free tier's real, observed quality is enough to ship on as-is (after the stuck-match fix), or whether it's worth exceeding the $20/month soft ceiling for API Tennis's draws/rankings (or Sportradar) — is for the user. The user has chosen to defer it and keep building the parts of the app that don't need it.
+
+That's **#42 — Tournament and player read models/routes**, now complete for everything the free tier actually supports: a player profile subview (`src/components/PlayerProfile.tsx`, reached via `#/player/<participantId>` from either participant's name on a tennis event's detail page) showing identity plus matches split into Recent/Upcoming, and the `us-open` tournament page's "Order of play" regrouped by round instead of by court. Rankings and draws remain correctly out of scope (#43/#44, still blocked on #40) — nothing here touches them.
+
+Two decisions worth knowing about if extending this further: player profiles are keyed by the raw domain participant ID, not a curated `entities.ts` destination id — real-mode tennis participants (`live-tennis-player-*`) have no curated entry and never will short of #41, so keying by curated id would make every real player's profile permanently unreachable. And round-group ordering is computed from each group's earliest match start time, not a hardcoded round-name table — mock and real round strings use different literal formats (`'Quarterfinal'` vs. `'WTA US Open - Quarter-finals'`, confirmed in `src/providers/live-tennis/normalizer.ts:95`), so a fixed lookup table tuned to one vocabulary would silently fail to order the other.
+
+Verified against both modes in a real browser, not just unit tests: mock mode's Alcaraz page correctly shows his live match under "Upcoming" with venue-based card meta; real mode's Rybakina page (against the actual live database) correctly shows her finished match — the exact one `match_resolution` fixed earlier this session — under "Recent" with the complete final score, and the `us-open` tournament page correctly split into "WTA US Open - Quarter-finals" and "ATP US Open - Quarter-finals" sections in chronological order. `npm run typecheck`, `npm run lint`, `npm test` (88/88), `npm run db:check`, and `npm run build` all pass.
 
 For #32 evidence, WTA live is now observed. Raw captures remain solely in ignored `.local/provider-samples/`. The feasibility gate remains open for the ten-change series, a real tiebreak, and exceptional states. Never commit raw responses or use them as test fixtures.
 

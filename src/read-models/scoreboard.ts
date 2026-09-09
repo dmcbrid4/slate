@@ -1,6 +1,8 @@
 import type { EventStatus, SideIndex } from '../domain/model.ts';
+import type { ParticipantId } from '../domain/ids.ts';
 
 export interface ScoreboardParticipant {
+  readonly id: ParticipantId;
   readonly name: string;
   readonly short: string;
   readonly mark: string;

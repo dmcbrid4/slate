@@ -43,6 +43,10 @@ export function eventHref(id: string, from: string): string {
   return `#/event/${id}?from=${encodeURIComponent(from)}`;
 }
 
+export function playerHref(id: string, from: string): string {
+  return `#/player/${id}?from=${encodeURIComponent(from)}`;
+}
+
 export function swipeDestination(current: string, following: string[], dx: number, dy: number): string | undefined {
   if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
   const rail = ['for-you', ...following];
