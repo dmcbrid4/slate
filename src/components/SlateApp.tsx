@@ -104,7 +104,7 @@ export function SlateApp({ scoreboardData }: { scoreboardData: ScoreboardData })
       : view === 'following' ? <Following following={preferences.following} onToggle={toggleFollow} onMove={move} onReset={() => { save({ ...preferences, following: defaultFollowing }); setNotice('Starter follows restored.'); }}/>
       : view === 'event' ? <EventDetail data={scoreboardData} id={id} from={from} timeZone={timeZone}/>
       : <Scoreboard data={scoreboardData} key={destination} destination={destination} day={day} following={preferences.following} timeZone={timeZone} onToggleFollow={toggleFollow}/>}
-      <footer className="prototype-footer"><BrandMark/><span>Phase 0 · Fictionalized September 2026 slate</span></footer>
+      <footer className="prototype-footer"><BrandMark/><span>Prototype · Fictionalized September 2026 slate</span></footer>
     </main>
     <div className="sr-only" role="status" aria-live="polite">{notice}</div>
     <nav className="mobile-nav" aria-label="Main navigation">{navItems}</nav>

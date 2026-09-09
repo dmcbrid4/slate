@@ -1,6 +1,6 @@
 # Phase 1 — canonical domain model
 
-Status: implementation steps 1–8 and the architecture audit are complete. The remaining work is the separate final validation and handoff.
+Status: complete. All implementation, architecture audit, validation, and handoff tasks are finished.
 
 ## Goal
 
@@ -79,3 +79,9 @@ All eight implementation steps are complete. At the user's direction, the final 
 ## Scope guardrails
 
 Do not add a real provider, authentication, user registration, background jobs, Redis, queues, polling, SSE, WebSockets, standings, rankings, draws, news, or production deployment. Do not broaden sports coverage. Do not redesign the Phase 0 UI unless migration reveals a concrete incompatibility.
+
+## Final validation
+
+The final Phase 1 checkpoint passed strict TypeScript, ESLint, all 49 deterministic tests, the Drizzle migration check, and the optimized Next.js production build. A fresh mobile browser pass at 390 × 844 verified For You, followed destinations, Yesterday / Today / Tomorrow, unified ATP/WTA, the combined US Open order of play, live tennis detail, Search filtering, Following management, and a destination-specific empty state. The browser console contained no warnings or errors.
+
+The runtime continues to use the in-memory canonical repository and fictional data by default. No database service, provider integration, authentication, live infrastructure, or Phase 2 work was added.

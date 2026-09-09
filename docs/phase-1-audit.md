@@ -42,4 +42,4 @@ Phase 1 contains no real sports API, provider SDK, authentication, polling, back
 
 ## Audit verification
 
-At audit completion, strict TypeScript, ESLint, all 49 deterministic tests, Drizzle migration validation, and the optimized Next.js production build pass. Task #30 remains the separate final Phase 1 validation and handoff checkpoint.
+At audit completion, strict TypeScript, ESLint, all 49 deterministic tests, Drizzle migration validation, and the optimized Next.js production build passed. Task #30 later repeated the complete suite and confirmed the core mobile experience in a fresh browser pass.

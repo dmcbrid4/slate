@@ -13,7 +13,7 @@ export function Search({ following, onToggle }: { following: string[]; onToggle:
     <div className="section-heading"><h2>{normalized ? `${results.length} ${results.length === 1 ? 'result' : 'results'}` : 'Explore Slate'}</h2><span className="secondary">All sports</span></div>
     <div className="entity-list">{results.map(entity => <div className="entity-row" key={entity.id}><Mark {...entity}/><a className="entity-info" href={`#/scores/${entity.id}/today`}><strong>{entity.name}</strong><span>{entity.kind} · {entity.subtitle}</span></a><button className={`follow-button ${following.includes(entity.id) ? 'is-following' : ''}`} aria-label={`${following.includes(entity.id) ? 'Unfollow' : 'Follow'} ${entity.name}`} aria-pressed={following.includes(entity.id)} onClick={() => onToggle(entity.id)}><Icon name={following.includes(entity.id) ? 'check' : 'plus'} size={16}/><span>{following.includes(entity.id) ? 'Following' : 'Follow'}</span></button></div>)}</div>
     {!results.length && <div className="empty-state"><Icon name="search" size={28}/><h2>No matches for “{query}”</h2><p>Try a team, player, or competition, like Tottenham or Alcaraz.</p><button className="button-primary" onClick={() => setQuery('')}>Explore all entities</button></div>}
-    <p className="small-note">Search covers the curated Phase 0 mock collection.</p>
+    <p className="small-note">Search covers this curated mock collection.</p>
   </>;
 }
 
