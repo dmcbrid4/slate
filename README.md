@@ -1,8 +1,8 @@
 # Slate
 
-A mobile-first personal sports scoreboard. The repository contains the complete Phase 0 mock-data product experience and the Phase 1 canonical domain, normalization, persistence shape, and server read boundary. It still runs with fictionalized local data by default.
+A mobile-first personal sports scoreboard. The repository contains the complete Phase 0 mock-data product experience and Phase 1 canonical architecture. Phase 2 tennis architecture is defined, while the running app still uses fictionalized local data by default.
 
-[The complete product brief](prompt.md) is the source of truth. See the [Phase 0 implementation record](docs/phase-0.md), [Phase 1 plan](docs/phase-1.md), and [Phase 1 architecture audit](docs/phase-1-audit.md) for the current scope and decisions.
+[The complete product brief](prompt.md) is the source of truth. See the [Phase 0 implementation record](docs/phase-0.md), [Phase 1 plan](docs/phase-1.md), [Phase 1 architecture audit](docs/phase-1-audit.md), and [Phase 2 tennis architecture](docs/phase-2.md) for the current scope and decisions.
 
 ## Run locally
 

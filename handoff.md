@@ -62,6 +62,43 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 30. [x] Phase 1 validation and handoff — Codex, GPT-5.6 Sol / high reasoning
     - Start only after #29 is complete and any audit corrections are accepted.
 
+### Phase 2 — tennis integration
+
+31. [x] Tennis architecture and provider decision gate — Codex, GPT-6 Astra / high reasoning
+    - Decisions are recorded in `docs/phase-2.md`. Stop here before implementation, per the user's standing model-handoff instruction.
+32. [ ] Authenticated Live Tennis API Free feasibility spike — Codex, GPT-5.6 Sol / high reasoning
+    - Use a no-card free key from `LIVE_TENNIS_API_KEY`; capture samples only under ignored local storage. Make no product runtime change and no paid commitment.
+33. [ ] Live Tennis API server client and runtime decoders — Codex, GPT-5.6 Sol / high reasoning
+    - Use native server-side fetch with `X-API-Key`; keep every provider field inside `src/providers/live-tennis`.
+34. [ ] Provider contract fixture matrix — Claude, GPT-5.6 Terra / medium reasoning
+    - Build only the cases specified from the verified sample inventory; use synthetic values and do not commit raw provider responses.
+35. [ ] Tournament registry and tennis normalizer — Codex, GPT-5.6 Sol / high reasoning
+    - Unify mapped ATP/WTA member competitions through Slate-owned groups; never group by name in the ingestion hot path.
+36. [ ] Persistence and atomic normalization-write boundary — Codex, GPT-5.6 Sol / high reasoning
+    - Claude may generate the fully specified migration with GPT-5.6 Terra / medium reasoning after Codex fixes the shape.
+37. [ ] Atomic write, observation-order, and idempotency tests — Claude, GPT-5.6 Terra / high reasoning
+    - Implement the accepted cases after #35 and #36; Codex reviews transaction and identity behavior.
+38. [ ] Free-tier quota and freshness coordinator — Codex, GPT-5.6 Sol / high reasoning
+    - Share accepted snapshots and refresh leases through PostgreSQL. Do not add Redis, workers, cron, SSE, or WebSockets.
+39. [ ] Opt-in real tennis scoreboard vertical slice — Codex, GPT-5.6 Sol / high reasoning
+    - Preserve mock startup and never mix fictional and real tennis events in one list. Free mode covers upcoming/live data only.
+40. [ ] Free-slice validation and paid-capability decision — Codex, GPT-5.6 Sol / high reasoning
+    - Measure data quality and product value before considering API Tennis, Live Tennis API Pro, or Sportradar production access.
+41. [ ] Tennis-specific ranking and draw domain extensions — Codex, GPT-5.6 Sol / high reasoning
+    - Finalize records and migrations only after #40 verifies the selected paid source's real semantics.
+42. [ ] Tournament and player read models/routes — Codex, GPT-5.6 Sol / high reasoning
+    - Preserve combined tournament defaults, history, originating score route, and browser-local date behavior.
+43. [ ] ATP/WTA rankings presentation — Claude, GPT-5.6 Terra / medium reasoning
+    - Implement the approved read model and UI; do not add ranking algorithms or extra statistics.
+44. [ ] Basic singles draw presentation — Codex, GPT-5.6 Sol / high reasoning
+    - Design the mobile bracket/round interaction after real draw semantics are verified; defer doubles and qualifying.
+45. [ ] Loading, stale, unavailable, and rate-limit states — Claude, GPT-5.6 Terra / medium reasoning
+    - Implement only the states specified by the provider and freshness contracts.
+46. [ ] Phase 2 architecture and provider-leakage audit — Codex, GPT-6 Astra / high reasoning
+47. [ ] Phase 2 final validation and handoff — Codex, GPT-5.6 Sol / high reasoning
+
+Phase 2 implementation must preserve unified ATP/WTA, Slate-owned IDs, explicit date controls, and mock local startup. It must not add authentication, another sport, official image assets, Redis, queues, workers, cron, SSE, WebSockets, odds, news, or AI-generated Context.
+
 Phase 1 implementation must preserve the Phase 0 UX and must not include a real sports provider, auth, polling, queues, Redis, workers, SSE, WebSockets, or Phase 2 tennis integration.
 
 Task #22 added pure domain modules under `src/domain`: opaque Slate-owned IDs; canonical records for sports, participants, competitions, groups, seasons, events, follows, collections, providers, and mappings; discriminated state for all four sports; record constructors; and cross-record graph invariants. The Phase 0 fixtures and UI remain unchanged. Focused tests cover all sport states, timestamps, identity, sport consistency, event sides, follow targets and positions, and provider identity uniqueness.
@@ -81,6 +118,8 @@ Task #28 added the `ScoreboardRepository` contract, an in-memory canonical imple
 Task #29 audited the implemented Phase 1 boundaries using GPT-5.6 Sol with high reasoning, at the user's direction. Provider-specific types remain isolated to the mock adapter; sport branching is limited to validation, normalization, hydration, projection, and sport-specific UI; canonical and read-model events remain discriminated unions; and the server passes only a serializable scoreboard DTO to the client. The audit fixed two concrete gaps: canonical participants without presentation overrides now receive safe name/mark/color fallbacks, and nested JSONB sport state is fully runtime-validated during database hydration. `tests/architecture.test.ts` now enforces the approved dependency directions and walks the client dependency closure. Strict TypeScript, ESLint, 49 tests, Drizzle migration checks, and the production build pass. The complete findings and accepted tradeoffs are recorded in `docs/phase-1-audit.md`. No Phase 2 work or live infrastructure was added.
 
 Task #30 completed the Phase 1 validation and handoff. Strict TypeScript, ESLint, all 49 tests, `drizzle-kit check`, and the optimized Next.js build pass. Browser QA at 390 × 844 verified the canonical server path through For You, ATP/WTA, US Open, a live tennis detail page, filtered Search, Following, and Tottenham's Tomorrow empty state; the browser console had no warnings or errors. A scope scan confirmed that no real provider, authentication, network retrieval, live transport, cache, worker, environment-backed database connection, or Phase 2 tennis integration entered the runtime. The last remaining phase-number copy in the product shell was replaced with durable prototype language. Phase 1 is complete.
+
+Task #31 defined the Phase 2 tennis architecture and provider decision gate in `docs/phase-2.md`. At the user's direction, Slate will start with Live Tennis API's no-card Free tier: 100 requests/day covering upcoming/live matches, current sets/games/points/server, players, fixtures, and tournament identity. The free vertical slice uses manual or deliberately slow refreshes and does not claim real completed results, ranking lists, or draws. API Tennis remains the full-scope upgrade candidate at $40/month, and Sportradar remains the technical benchmark. The next task is an authenticated, read-only feasibility spike that must prove payload semantics, ATP/WTA grouping, freshness, quota enforcement, and private-prototype storage rights before any adapter or migration is implemented.
 
 ## Tasks 6–17 summary
 

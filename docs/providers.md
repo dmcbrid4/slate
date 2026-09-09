@@ -1,6 +1,6 @@
 # Provider boundary
 
-Status: Phase 1 architecture decision and mock boundary tests implemented through task #26. No real provider is selected or integrated in this phase.
+Status: the Phase 1 mock boundary is complete. Phase 2 selects Live Tennis API Free for a no-purchase, low-frequency feasibility slice; see [the Phase 2 architecture](./phase-2.md). No real provider is integrated yet.
 
 ## Required flow
 
