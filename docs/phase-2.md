@@ -40,7 +40,7 @@ Official references:
 - [Live Tennis API plans](https://livetennisapi.com/pricing), [full API reference](https://docs.livetennisapi.com/reference.html), and [terms](https://livetennisapi.com/terms)
 - [Sportradar Tennis overview](https://developer.sportradar.com/tennis/docs/tennis-ig-overview), [coverage tiers](https://developer.sportradar.com/tennis/docs/tennis-ig-data-coverage-tiers), and [trial limits](https://developer.sportradar.com/tennis/docs/ig-account-maintenance)
 
-The first implementation task is an authenticated Live Tennis API Free spike. It must not change the running product. A go decision requires all of the following:
+The first implementation task is an authenticated Live Tennis API Free spike. It must not change the running product. The quota-safe procedure and evidence checklist live in [the spike runbook](./phase-2-spike.md). A go decision requires all of the following:
 
 1. Capture representative ATP and WTA upcoming/live singles, player, tournament, and usage payloads.
 2. Confirm the live payload truthfully exposes current games, current point, server, tiebreaks, and retirement/suspension states without inference from prose.

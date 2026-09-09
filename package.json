@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "provider:spike": "node --experimental-strip-types scripts/live-tennis-spike.ts",
     "db:generate": "drizzle-kit generate",
     "db:check": "drizzle-kit check"
   },

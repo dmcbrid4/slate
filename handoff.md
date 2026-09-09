@@ -68,6 +68,7 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
     - Decisions are recorded in `docs/phase-2.md`. Stop here before implementation, per the user's standing model-handoff instruction.
 32. [ ] Authenticated Live Tennis API Free feasibility spike — Codex, GPT-5.6 Sol / high reasoning
     - Use a no-card free key from `LIVE_TENNIS_API_KEY`; capture samples only under ignored local storage. Make no product runtime change and no paid commitment.
+    - The safe survey/observation harness and runbook are ready in `scripts/live-tennis-spike.ts` and `docs/phase-2-spike.md`; authenticated evidence is still pending because no local key is configured.
 33. [ ] Live Tennis API server client and runtime decoders — Codex, GPT-5.6 Sol / high reasoning
     - Use native server-side fetch with `X-API-Key`; keep every provider field inside `src/providers/live-tennis`.
 34. [ ] Provider contract fixture matrix — Claude, GPT-5.6 Terra / medium reasoning
