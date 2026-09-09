@@ -64,7 +64,7 @@ export function Scoreboard({ data, destination, day, following, timeZone, onTogg
   };
 
   return <div
-    className="scoreboard-view"
+    className={`scoreboard-view accent-${entity?.color ?? 'neutral'}`}
     onTouchStart={event => {
       const first = event.touches[0];
       startSwipe(first?.clientX ?? 0, first?.clientY ?? 0, event.touches.length);
@@ -117,6 +117,6 @@ export function FollowRail({ following, destination, day }: { following: string[
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     rail.scrollTo({ left: Math.max(0, target), behavior: reducedMotion ? 'auto' : 'smooth' });
   }, [destination, following]);
-  const destinations = [{ id: 'for-you', shortName: 'For You' }, ...following.map(id => entities.find(entity => entity.id === id)).filter(entity => entity !== undefined)];
-  return <nav ref={railRef} className="follow-rail" aria-label="Followed scoreboards">{destinations.map(entity => <a key={entity.id} ref={destination === entity.id ? selectedRef : undefined} href={`#/scores/${entity.id}/${day}`} aria-current={destination === entity.id ? 'page' : undefined} className={destination === entity.id ? `active accent-${'color' in entity ? entity.color : 'neutral'}` : ''}>{entity.shortName}</a>)}<a className="rail-add" href="#/search" aria-label="Find more to follow"><Icon name="plus" size={16}/></a></nav>;
+  const destinations = [{ id: 'for-you', shortName: 'For You', color: 'neutral' }, ...following.map(id => entities.find(entity => entity.id === id)).filter(entity => entity !== undefined)];
+  return <nav ref={railRef} className="follow-rail" aria-label="Followed scoreboards">{destinations.map(entity => <a key={entity.id} ref={destination === entity.id ? selectedRef : undefined} href={`#/scores/${entity.id}/${day}`} aria-current={destination === entity.id ? 'page' : undefined} className={destination === entity.id ? `active accent-${entity.color}` : ''}>{entity.shortName}</a>)}<a className="rail-add" href="#/search" aria-label="Find more to follow"><Icon name="plus" size={16}/></a></nav>;
 }

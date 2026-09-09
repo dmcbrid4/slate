@@ -27,7 +27,7 @@ async function getRealScoreboardData() {
   const mockGraph = await mockScoreboardRepository.readGraph(LOCAL_PRIMARY_OWNER_ID);
   const realTennisGraph = await getRealTennisGraph(getDb(), now);
   const merged = mergeRealTennisIntoGraph(mockGraph, realTennisGraph);
-  return projectScoreboardData(merged, { presentation: canonicalScoreboardPresentation, asOf: now });
+  return { ...projectScoreboardData(merged, { presentation: canonicalScoreboardPresentation, asOf: now }), source: 'live-tennis' as const };
 }
 
 export async function getInitialScoreboardData() {
