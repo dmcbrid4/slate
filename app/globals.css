@@ -69,7 +69,13 @@
   .follow-rail::-webkit-scrollbar { display: none; }
   .follow-rail a { display: flex; align-items: center; min-height: 55px; white-space: nowrap; scroll-snap-align: center; font-size: .875rem; color: var(--secondary); position: relative; font-weight: 500; }
   .follow-rail a.active { color: var(--strong); font-weight: 650; }
-  .follow-rail a.active::after { content: ''; position: absolute; bottom: 0; height: 2px; background: var(--strong); left: 0; right: 0; }
+  .follow-rail a.active::after { content: ''; position: absolute; bottom: 0; height: 2px; background: var(--destination-accent, var(--strong)); left: 0; right: 0; }
+  .follow-rail .accent-tennis { --destination-accent: #6d7e38; }
+  .follow-rail .accent-navy { --destination-accent: #283f59; }
+  .follow-rail .accent-red { --destination-accent: #a52d3a; }
+  .follow-rail .accent-brick { --destination-accent: #964238; }
+  .follow-rail .accent-purple { --destination-accent: #68438b; }
+  .follow-rail .accent-blue { --destination-accent: #3565a1; }
   .follow-rail a:hover { color: var(--strong); }
   .follow-rail .rail-add { min-width: 30px; }
   .main-content { max-width: 800px; margin: 0 auto; padding: 25px 20px calc(105px + env(safe-area-inset-bottom)); }
@@ -97,7 +103,11 @@
   .quiet-link { display: flex; align-items: center; gap: 5px; font-size: .75rem; color: var(--secondary); min-height: 28px; }
   .quiet-link:hover { color: var(--strong); }
   .event-grid { display: grid; gap: 10px; }
-  .score-card { display: block; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 14px 15px 13px; transition: border-color .15s; }
+  .score-card { display: block; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 14px 15px 13px; box-shadow: inset 3px 0 var(--sport-accent, transparent); transition: border-color .15s, box-shadow .15s; }
+  .score-card.soccer { --sport-accent: #4a8068; }
+  .score-card.tennis { --sport-accent: #78894a; }
+  .score-card.baseball { --sport-accent: #ae5c4f; }
+  .score-card.football { --sport-accent: #456da3; }
   a.score-card:hover { border-color: var(--muted); }
   a.score-card:active { background: var(--hover); }
   .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 9px; min-height: 20px; font-size: .75rem; color: var(--secondary); margin-bottom: 11px; }
