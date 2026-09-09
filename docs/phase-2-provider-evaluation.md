@@ -2,6 +2,8 @@
 
 Status: authenticated feasibility in progress. The initial survey passed the basic live-score and identity checks, exposed several provider quirks, and has not yet completed the required WTA-live and ten-change observations.
 
+The server client and endpoint decoders now encode this verified structural inventory under `src/providers/live-tennis`. HTTP response bodies remain `unknown` until the matching decoder accepts them; this does not close the outstanding live-observation gate.
+
 Evidence was captured on September 9, 2026 under the ignored `.local/provider-samples/live-tennis/` directory. This document records only structural findings; it does not reproduce raw responses.
 
 ## Confirmed

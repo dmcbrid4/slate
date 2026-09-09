@@ -21,7 +21,7 @@ const allowedExternalDependencies: Readonly<Record<Layer, ReadonlySet<string>>> 
   domain: new Set(),
   'read-models': new Set(),
   application: new Set(),
-  providers: new Set(),
+  providers: new Set(['server-only']),
   db: new Set(['drizzle-orm', 'drizzle-orm/pg-core']),
 };
 
@@ -117,4 +117,10 @@ test('the client dependency closure excludes server, database, provider, and see
   }
 
   assert.ok(visited.size > 1, 'The client dependency walk should include SlateApp dependencies.');
+});
+
+test('the Live Tennis environment-backed client is explicitly server-only', () => {
+  const source = readFileSync(join(sourceRoot, 'providers/live-tennis/client.ts'), 'utf8');
+  assert.match(source, /^import ['"]server-only['"];?/);
+  assert.match(source, /process\.env\.LIVE_TENNIS_API_KEY/);
 });

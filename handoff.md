@@ -69,8 +69,9 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 32. [ ] Authenticated Live Tennis API Free feasibility spike — Codex, GPT-5.6 Sol / high reasoning
     - Use a no-card free key from `LIVE_TENNIS_API_KEY`; capture samples only under ignored local storage. Make no product runtime change and no paid commitment.
     - The initial authenticated survey is complete. `docs/phase-2-provider-evaluation.md` records the confirmed contract and provider quirks. A known live match remained readable through final on Free. Four of ten distinct ATP live changes were observed; WTA live and exceptional statuses remain outstanding, so the gate stays open.
-33. [ ] Live Tennis API server client and runtime decoders — Codex, GPT-5.6 Sol / high reasoning
+33. [x] Live Tennis API server client and runtime decoders — Codex, GPT-5.6 Sol / high reasoning
     - Use native server-side fetch with `X-API-Key`; keep every provider field inside `src/providers/live-tennis`.
+    - Added a server-only, no-store native-fetch client whose successful bodies remain `unknown`, structured leak-safe HTTP/rate-limit errors, and endpoint-specific runtime decoders for the verified match, score, fixture, tournament, player, and usage shapes. The adapter remains disconnected from normalization, persistence, refresh coordination, and product UI.
 34. [ ] Provider contract fixture matrix — Claude, GPT-5.6 Terra / medium reasoning
     - Build only the cases specified from the verified sample inventory; use synthetic values and do not commit raw provider responses.
 35. [ ] Tournament registry and tennis normalizer — Codex, GPT-5.6 Sol / high reasoning
