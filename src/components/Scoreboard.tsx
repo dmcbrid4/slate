@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { entities, entityById } from '@/data/entities';
 import { eventMatchesFollowDestination, groupByRoundInOrder, isPersonal, selectScoreboardEvents } from '@/data/scoreboard';
 import type { Day } from '@/data/types';
-import { days, formatDay, formatFullDay, selectedDate, swipeDestination, timezoneLabel } from '@/lib/scores';
+import { days, dayLabels, formatDay, formatFullDay, selectedDate, swipeDestination, timezoneLabel } from '@/lib/scores';
 import type { ScoreboardEvent } from '@/read-models/scoreboard';
 import type { ScoreboardData } from '@/read-models/scoreboard-data';
 import { Icon } from './Icon';
@@ -11,7 +11,7 @@ import { Mark, ScoreCard } from './ScoreCard';
 export function DateNav({ day, destination, timeZone, asOf }: { day: Day; destination: string; timeZone: string; asOf: string }) {
   return <nav className="date-nav" aria-label="Scoreboard date">{days.map(item => {
     const date = selectedDate(asOf, item, timeZone);
-    const label = item[0].toUpperCase() + item.slice(1);
+    const label = dayLabels[item];
     const classes = [day === item ? 'selected' : '', item === 'today' ? 'calendar-today' : ''].filter(Boolean).join(' ');
     return <a href={`#/scores/${destination}/${item}`} className={classes} aria-label={`${label}, ${formatFullDay(date)}`} aria-current={day === item ? 'date' : undefined} key={item}>
       <span>{label}</span><time dateTime={date}>{formatDay(date).split(', ')[1]}</time>
@@ -88,7 +88,7 @@ export function Scoreboard({ data, destination, day, following, timeZone, onTogg
         {!tournament && <a href={`#/scores/us-open/${day}`} className="tournament-banner"><span className="tournament-mark"><Icon name="ball" size={29}/></span><span><strong>US Open</strong><small>New York · Grand Slam · Hard court</small></span><Icon name="chevron" size={18}/></a>}
         <div className="tennis-filter"><div className="filter-options" role="group" aria-label="Tennis category">{['All', 'Men', 'Women'].map(item => <button key={item} onClick={() => setCategory(item)} aria-pressed={category === item} className={category === item ? 'active' : ''}>{item === 'All' ? 'All matches' : item}</button>)}</div><span className="secondary">Singles</span></div>
       </>}
-      {!events.length ? <div className="empty-state"><Icon name="scores" size={32}/><h2>{following.length === 0 && destination === 'for-you' ? 'Your slate starts here' : `No events ${day}`}</h2><p>{following.length === 0 && destination === 'for-you' ? 'Follow a team, player, or competition to make this yours.' : `Nothing scheduled for ${entity?.shortName ?? 'your follows'} on this mock day.`}</p><a className="button-primary" href={following.length === 0 ? '#/search' : '#/scores/for-you/today'}>{following.length === 0 ? 'Find your follows' : 'Go to today’s For You'}<Icon name="arrow" size={16}/></a></div>
+      {!events.length ? <div className="empty-state"><Icon name="scores" size={32}/><h2>{following.length === 0 && destination === 'for-you' ? 'Your slate starts here' : `No events ${day}`}</h2><p>{following.length === 0 && destination === 'for-you' ? 'Follow a team, player, or competition to make this yours.' : `Nothing scheduled for ${entity?.shortName ?? 'your follows'} on this day.`}</p><a className="button-primary" href={following.length === 0 ? '#/search' : '#/scores/for-you/today'}>{following.length === 0 ? 'Find your follows' : 'Go to today’s For You'}<Icon name="arrow" size={16}/></a></div>
       : destination === 'for-you' ? <>
         <EventGroup title="Following closely" events={personal} timeZone={timeZone} from={from}/>
         {broadGroups.map(({ broad, groupEvents }) => broad.sport === 'tennis'

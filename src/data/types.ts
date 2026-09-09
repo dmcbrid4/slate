@@ -1,5 +1,5 @@
 // Temporary presentation fixtures for Phase 0, not a canonical domain model.
-export type Day = 'yesterday' | 'today' | 'tomorrow';
+export type Day = 'five-days-ago' | 'four-days-ago' | 'three-days-ago' | 'two-days-ago' | 'yesterday' | 'today' | 'tomorrow' | 'two-days-ahead' | 'three-days-ahead' | 'four-days-ahead' | 'five-days-ahead';
 export type Sport = 'soccer' | 'tennis' | 'baseball' | 'football';
 export type Entity = {
   id: string;

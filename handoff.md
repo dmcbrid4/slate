@@ -357,3 +357,9 @@ At that checkpoint, the final validation pass confirmed the Phase 0 surface agai
 - Added a Champions League destination and included it in the starter follows.
 - The football-data request now fetches `PL,CL` in one bounded call and labels each match by competition.
 - Champions League competition and Tottenham/team target matches use the same soccer card presentation and fallback behavior.
+
+## Task 52: expanded date range (completed)
+
+- Date navigation now exposes five days before today through five days after today, with Today still marked as the calendar anchor.
+- The eleven controls scroll horizontally on narrow screens while preserving explicit, keyboard-accessible links.
+- MLB and football provider requests now cover the same eleven-day window.

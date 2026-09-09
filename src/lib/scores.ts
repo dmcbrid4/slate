@@ -1,6 +1,12 @@
 import type { Day } from '../data/types.ts';
 
-export const days: Day[] = ['yesterday', 'today', 'tomorrow'];
+export const days: Day[] = ['five-days-ago', 'four-days-ago', 'three-days-ago', 'two-days-ago', 'yesterday', 'today', 'tomorrow', 'two-days-ahead', 'three-days-ahead', 'four-days-ahead', 'five-days-ahead'];
+
+export const dayLabels: Record<Day, string> = {
+  'five-days-ago': '5 days ago', 'four-days-ago': '4 days ago', 'three-days-ago': '3 days ago', 'two-days-ago': '2 days ago',
+  yesterday: 'Yesterday', today: 'Today', tomorrow: 'Tomorrow',
+  'two-days-ahead': 'In 2 days', 'three-days-ahead': 'In 3 days', 'four-days-ahead': 'In 4 days', 'five-days-ahead': 'In 5 days',
+};
 
 export function dateKey(instant: string, timeZone: string): string {
   const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(instant));
@@ -10,7 +16,7 @@ export function dateKey(instant: string, timeZone: string): string {
 
 export function selectedDate(now: string, day: Day, timeZone: string): string {
   const date = new Date(`${dateKey(now, timeZone)}T12:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days.indexOf(day) - 1);
+  date.setUTCDate(date.getUTCDate() + days.indexOf(day) - 5);
   return date.toISOString().slice(0, 10);
 }
 

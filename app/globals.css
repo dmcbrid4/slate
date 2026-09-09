@@ -87,8 +87,9 @@
   .title-detail { display: block; margin-top: 7px; font-size: .875rem; font-weight: 400; color: var(--secondary); letter-spacing: 0; }
   .live-count { font-size: .8125rem; font-weight: 550; color: var(--live); display: flex; align-items: center; gap: 6px; white-space: nowrap; padding-top: 18px; }
   .live-count i, .event-status.live i { height: 5px; width: 5px; background: currentColor; border-radius: 50%; }
-  .date-nav { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--selected); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
-  .date-nav a { display: flex; min-width: 0; min-height: 54px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 4px; color: var(--secondary); border-radius: 7px; font-size: .875rem; font-weight: 500; }
+  .date-nav { display: flex; overflow-x: auto; background: var(--selected); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; scrollbar-width: none; }
+  .date-nav::-webkit-scrollbar { display: none; }
+  .date-nav a { display: flex; flex: 1 0 92px; min-width: 0; min-height: 54px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 4px; color: var(--secondary); border-radius: 7px; font-size: .875rem; font-weight: 500; }
   .date-nav a time { font-size: .75rem; font-weight: 450; color: var(--muted); }
   .date-nav a.calendar-today { color: var(--strong); font-weight: 650; }
   .date-nav a.calendar-today:not(.selected) > span::after { content: ''; display: inline-block; width: 4px; height: 4px; margin: 0 0 2px 6px; border-radius: 50%; background: var(--accent); opacity: .7; }
