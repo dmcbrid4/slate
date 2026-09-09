@@ -1,18 +1,10 @@
 import { eq, and } from 'drizzle-orm';
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
-import { decideRefresh, nextRefreshAt, utcDay, type RefreshDecision, type RefreshResource } from '../application/refresh-policy.ts';
-import type { ProviderId } from '../domain/ids.ts';
+import { decideRefresh, nextRefreshAt, utcDay } from '../application/refresh-policy.ts';
+import type { RefreshRepository } from '../application/refresh-repository.ts';
 import * as schema from './schema.ts';
 
-export type RefreshLeaseResult =
-  | { readonly type: 'acquired'; readonly token: string; readonly expiresAt: string }
-  | Exclude<RefreshDecision, { readonly type: 'acquire' }>;
-
-export interface RefreshRepository {
-  acquire(providerId: ProviderId, resource: RefreshResource, now: string, reserveCalls?: number): Promise<RefreshLeaseResult>;
-  complete(input: { readonly providerId: ProviderId; readonly resource: RefreshResource; readonly token: string; readonly acceptedAt: string; readonly providerObservedAt?: string }): Promise<boolean>;
-  fail(input: { readonly providerId: ProviderId; readonly resource: RefreshResource; readonly token: string; readonly failedAt: string; readonly code: string; readonly retryAt: string }): Promise<boolean>;
-}
+export type { RefreshLeaseResult, RefreshRepository } from '../application/refresh-repository.ts';
 
 export function createDrizzleRefreshRepository<TQueryResult extends PgQueryResultHKT>(db: PgDatabase<TQueryResult, typeof schema>): RefreshRepository {
   return {
