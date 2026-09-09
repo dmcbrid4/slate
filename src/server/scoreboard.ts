@@ -41,13 +41,7 @@ export async function getInitialScoreboardData() {
     if (isFootballDataModeEnabled()) { try { current = await getFootballDataScoreboardData(current, now); } catch {} }
     return current;
   };
-  if (!isLiveTennisModeEnabled()) {
-    console.warn('live_tennis_disabled', {
-      databaseConfigured: Boolean(process.env.DATABASE_URL?.trim()),
-      apiKeyConfigured: Boolean(process.env.LIVE_TENNIS_API_KEY?.trim()),
-    });
-    return applyOptionalProviders(mockData, new Date().toISOString());
-  }
+  if (!isLiveTennisModeEnabled()) return applyOptionalProviders(mockData, new Date().toISOString());
 
   // `Promise.race` doesn't cancel the loser: if the timeout wins, the real-data promise is still
   // running and will eventually settle on its own. Attach a no-op catch so that later rejection
