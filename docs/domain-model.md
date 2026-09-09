@@ -1,6 +1,6 @@
 # Slate canonical domain model
 
-Status: Phase 1 architecture decision. Canonical primitives, invariants, seed data, scoreboard projection, and derived relevance are implemented through task #24.
+Status: Phase 1 implementation through task #27. Canonical primitives, invariants, seed data, scoreboard projection, derived relevance, provider normalization, and the initial PostgreSQL schema are implemented.
 
 ## Purpose
 
@@ -259,6 +259,16 @@ Use PostgreSQL with Drizzle for the first persistent implementation. Drizzle fit
 - `follows`
 
 Repositories sit between application services and Drizzle. UI and normalization code do not import database rows. Phase 1 should keep the existing mock prototype runnable without a database until the canonical seed and repository path are proven.
+
+The initial schema is defined in `src/db/schema.ts`, with its generated migration and Drizzle snapshot under `drizzle/`. Common event fields are columns; the validated sport-specific state stays in JSONB. `observed_at` records the accepted provider observation separately from `starts_at`. It is nullable because seeded or manually created canonical events may not originate in a provider observation.
+
+Three storage choices make the TypeScript invariants enforceable in PostgreSQL:
+
+- `event_participants.sport_id` is a deliberate storage-only copy used by composite foreign keys to require both the event and participant to belong to the same sport.
+- Collection members, follows, and provider mappings store a target discriminator plus nullable foreign-key columns. Check constraints require exactly one target column and require it to agree with the discriminator.
+- Events use composite foreign keys to require their competition to share the event sport and their season to belong to the event competition. A JSONB check also requires the minimal state marker for the event sport.
+
+The schema and migration can be inspected without a running database using `npm run db:check`. Database connection configuration and repository execution are deferred to task #28, so the local mock prototype remains runnable with no PostgreSQL service.
 
 ## Required invariants
 
