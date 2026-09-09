@@ -136,3 +136,131 @@ test('a merged match exposes only its validated forwarding identity', async () =
     return true;
   });
 });
+
+test('synthetic match and score variants cover lifecycle, event, round, draw, and nullable diagnostics', () => {
+  for (const status of ['upcoming', 'live', 'completed', 'cancelled']) {
+    assert.equal(liveTennisMatchDecoder.parse({ ...match, status }).status, status);
+  }
+  for (const event_status of ['Retired', 'Cancelled', 'Walk Over', 'Postponed', 'Interrupted']) {
+    assert.equal(liveTennisMatchDecoder.parse({ ...match, event_status, event_status_updated_at: '2026-09-09T15:00:00Z' }).event_status, event_status);
+  }
+  for (const draw of ['singles', 'doubles', null]) {
+    assert.equal(liveTennisMatchDecoder.parse({ ...match, draw }).draw, draw);
+  }
+  for (const round_code of ['F', 'SF', 'QF', 'R16', 'R32', 'R64', 'R128', 'RR', 'BR', 'Q', 'Q1', 'Q2', 'Q3', 'Q4', 'ER', null]) {
+    assert.equal(liveTennisMatchDecoder.parse({ ...match, round_code }).round_code, round_code);
+  }
+  const mergerFields = liveTennisMatchDecoder.parse({ ...match, winner: 2, withdrew: 1, future_field: { ignored: true } });
+  assert.equal(mergerFields.winner, 2);
+  assert.equal(mergerFields.withdrew, 1);
+
+  const tiebreak = liveTennisScoreDecoder.parse({ ...score, points: ['6', '5'], server: 2, is_tiebreak: true });
+  assert.equal(tiebreak.is_tiebreak, true);
+  assert.deepEqual(tiebreak.points, ['6', '5']);
+  const completed = liveTennisScoreDecoder.parse({
+    ...score, sets: [2, 0], games: [[6, 6], [3, 2]], points: ['0', '0'], server: 1,
+    timestamp: null, sequence: null, age_seconds: null, observed_age_seconds: null, sources_count: null, stale: true,
+  });
+  assert.deepEqual(completed.points, ['0', '0']);
+  assert.equal(completed.server, 1);
+  assert.equal(completed.timestamp, null);
+  assert.equal(completed.sequence, null);
+  const reduced = liveTennisScoreDecoder.parse({ ...score, points: [null, null], server: null, timestamp: null });
+  assert.deepEqual(reduced.points, [null, null]);
+  assert.equal(reduced.server, null);
+});
+
+test('synthetic fixture, tournament, player, usage, and metadata variants preserve documented boundaries', () => {
+  const fixtureBase = {
+    id: 9001, match_id: 501, event_date: '2026-09-09', start_time: '2026-09-09T16:00:00Z',
+    player1_id: 101, player2_id: 102, gender: 'men', is_qualifying: false, tour: 'atp',
+    tournament: 'Synthetic Tournament', round: 'Quarterfinal', round_code: 'QF', surface: 'hard',
+    player1_name: 'Synthetic Player A', player2_name: 'Synthetic Player B', reason: null, status: 'scheduled', updated_at: '2026-09-09T14:00:00Z',
+  };
+  for (const status of ['scheduled', 'live', 'finished', 'opaque-provider-state', null]) {
+    const decoded = liveTennisFixtureListDecoder.parse({ data: [{ ...fixtureBase, status }], meta });
+    assert.equal(decoded.data[0].status, status);
+    assert.equal(decoded.data[0].match_id, 501);
+    assert.notEqual(decoded.data[0].id, decoded.data[0].match_id);
+  }
+  const sparseFixture = liveTennisFixtureListDecoder.parse({ data: [{
+    ...fixtureBase, event_date: null, start_time: null, player1_id: null, player2_id: null, gender: null,
+    tour: null, tournament: null, round: null, round_code: null, surface: null, player1_name: null, player2_name: null, status: null,
+  }], meta });
+  assert.equal(sparseFixture.data[0].start_time, null);
+
+  const tournament = liveTennisTournamentListDecoder.parse({ data: [{
+    id: 'synthetic-tour', name: null, tour: 'wta', surface: null, indoor: false, gender: 'women', city: null, country: null,
+    category: 'grand_slam', updated_at: '2026-09-09T12:00:00Z',
+  }], meta: { limit: 25, offset: 0, count: 1, total: null, has_more: true } });
+  assert.equal(tournament.data[0].category, 'grand_slam');
+  assert.equal(tournament.meta.total, null);
+
+  const detail = liveTennisPlayerDecoder.parse({ ...player,
+    tour: null, country: null, ranking: null, ranking_points: null, ranking_movement: null, hand: null, backhand: null, birthday: null,
+    data_completeness: { known: null, of: null, missing: [] }, stats: { ratings: null, seasons: [] },
+  });
+  assert.equal(detail.ranking, null);
+  assert.deepEqual(detail.data_completeness.missing, []);
+  const usage = liveTennisUsageDecoder.parse({
+    principal: 'opaque-synthetic-principal', tier: 'free', base_tier: 'free', tier_expires_at: null, channel: 'direct',
+    limits: { per_minute: 30, per_day: 100 }, today: { calls: 8, errors: 0, remaining_day: null },
+    history: [{ day: '2026-09-08', calls: 3, errors: 0 }], as_of: '2026-09-09T15:01:00Z',
+  });
+  assert.equal(usage.limits.per_day, 100);
+  assert.equal(usage.today.remaining_day, null);
+});
+
+test('expanded malformed matrix rejects invalid documented fields at safe paths', () => {
+  const fixtureBase = {
+    id: 9001, match_id: 501, event_date: null, start_time: null, player1_id: null, player2_id: null, gender: null,
+    is_qualifying: false, tour: null, tournament: null, round: null, round_code: null, surface: null,
+    player1_name: null, player2_name: null, reason: null, status: null, updated_at: '2026-09-09T14:00:00Z',
+  };
+  for (const [payload, decoder, path] of [
+    [{ ...match, event_status: 'Suspended' }, liveTennisMatchDecoder, '$.event_status'],
+    [{ ...match, round_code: 'R4' }, liveTennisMatchDecoder, '$.round_code'],
+    [{ ...match, winner: 3 }, liveTennisMatchDecoder, '$.winner'],
+    [{ ...score, points: ['15'] }, liveTennisScoreDecoder, '$.points'],
+    [{ ...score, server: 3 }, liveTennisScoreDecoder, '$.server'],
+    [{ data: [{ ...fixtureBase, match_id: 0 }], meta }, liveTennisFixtureListDecoder, '$.data[0].match_id'],
+    [{ data: [{ id: 'synthetic', name: null, tour: null, surface: null, indoor: false, gender: null, city: null, country: null, category: 'major', updated_at: '2026-09-09T12:00:00Z' }], meta }, liveTennisTournamentListDecoder, '$.data[0].category'],
+    [{ ...player, data_completeness: { known: 1, of: 1, missing: [null] }, stats: {} }, liveTennisPlayerDecoder, '$.data_completeness.missing[0]'],
+    [{ principal: 'synthetic', tier: 'free', base_tier: 'free', tier_expires_at: null, channel: 'direct', limits: {}, today: {}, history: [], as_of: '2026-09-09T15:00:00Z' }, liveTennisUsageDecoder, '$.limits.per_minute'],
+  ] as const) {
+    assert.throws(() => decoder.parse(payload), (error: unknown) => error instanceof LiveTennisDecodeError && error.path === path);
+  }
+});
+
+test('HTTP client covers all documented route shapes and structured failures', async () => {
+  const requests: { url: URL; init?: RequestInit }[] = [];
+  const fetchStub = (async (input: URL | RequestInfo, init?: RequestInit) => {
+    requests.push({ url: new URL(String(input)), init });
+    return new Response(JSON.stringify({ data: [], meta: { limit: 25, offset: 0, count: 0 } }), { status: 200 });
+  }) as typeof fetch;
+  const client = createLiveTennisHttpClient({ apiKey: 'synthetic-secret', fetch: fetchStub });
+  await client.listMatches({ status: 'live', tour: 'atp', draw: 'singles', limit: 25, offset: 2 });
+  await client.getMatch(501); await client.getScore(501); await client.listFixtures({ tour: 'wta' });
+  await client.listTournaments({ tour: 'atp', draw: 'singles', search: 'synthetic' });
+  await client.getTournament('tour / 44'); await client.getPlayer(101); await client.getUsage();
+  assert.deepEqual(requests.map(({ url }) => `${url.pathname}${url.search}`), [
+    '/api/public/v1/matches?status=live&limit=25&offset=2&tour=atp&draw=singles', '/api/public/v1/matches/501',
+    '/api/public/v1/matches/501/score', '/api/public/v1/fixtures?tour=wta',
+    '/api/public/v1/tournaments?tour=atp&draw=singles&search=synthetic', '/api/public/v1/tournaments/tour%20%2F%2044',
+    '/api/public/v1/players/101', '/api/public/v1/usage',
+  ]);
+  for (const { url, init } of requests) {
+    assert.ok(!url.toString().includes('synthetic-secret'));
+    assert.equal(new Headers(init?.headers).get('x-api-key'), 'synthetic-secret');
+    assert.equal(init?.cache, 'no-store');
+  }
+
+  for (const [status, body, code] of [[401, {}, 'unauthorized'], [403, {}, 'forbidden'], [404, {}, 'not_found'], [500, {}, 'http_error'], [429, { error: 'rate_limited', scope: 'day', resets_at: '2026-09-10T00:00:00Z' }, 'rate_limited']] as const) {
+    const failing = createLiveTennisHttpClient({ apiKey: 'synthetic-secret', fetch: (async () => new Response(JSON.stringify(body), {
+      status, headers: { 'retry-after': '60', 'x-ratelimit-remaining': '0' },
+    })) as typeof fetch });
+    await assert.rejects(failing.getUsage(), (error: unknown) => error instanceof LiveTennisHttpError && error.code === code && error.status === status && error.rateLimit.retryAfterSeconds === 60);
+  }
+  const malformedForward = createLiveTennisHttpClient({ apiKey: 'synthetic-secret', fetch: (async () => new Response(JSON.stringify({ merged_into: 0, merged_at: 'bad' }), { status: 410 })) as typeof fetch });
+  await assert.rejects(malformedForward.getMatch(501), (error: unknown) => error instanceof LiveTennisHttpError && error.code === 'merged' && error.mergedInto === null && error.mergedAt === null);
+});

@@ -72,8 +72,8 @@ Codex owns product decisions, interaction architecture, cross-screen changes, an
 33. [x] Live Tennis API server client and runtime decoders — Codex, GPT-5.6 Sol / high reasoning
     - Use native server-side fetch with `X-API-Key`; keep every provider field inside `src/providers/live-tennis`.
     - Added a server-only, no-store native-fetch client whose successful bodies remain `unknown`, structured leak-safe HTTP/rate-limit errors, and endpoint-specific runtime decoders for the verified match, score, fixture, tournament, player, and usage shapes. The adapter remains disconnected from normalization, persistence, refresh coordination, and product UI.
-34. [ ] Provider contract fixture matrix — Claude, GPT-5.6 Terra / medium reasoning
-    - Build only the cases specified from the verified sample inventory; use synthetic values and do not commit raw provider responses.
+34. [x] Provider contract fixture matrix — Claude, GPT-5.6 Terra / medium reasoning
+    - Synthetic fixtures now cover documented match lifecycle, event status, draws, round codes, optional merger fields, live/completed/reduced score diagnostics, fixture schedule identity and opaque status, nullable tournament/player/usage fields, list metadata, malformed paths, every provider route, HTTP failures, rate limits, and 410 forwarding. No raw provider response or credential entered the repository.
 35. [ ] Tournament registry and tennis normalizer — Codex, GPT-5.6 Sol / high reasoning
     - Unify mapped ATP/WTA member competitions through Slate-owned groups; never group by name in the ingestion hot path.
 36. [ ] Persistence and atomic normalization-write boundary — Codex, GPT-5.6 Sol / high reasoning
